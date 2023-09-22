@@ -121,11 +121,9 @@ end
 
 % Convert [ft] to [m]
 if 1 <= depNum <= 2
-    % Do nothing (depth already in [m])
-elseif 5 <= depNum <= 14
-    sonde1.depth = sonde1.depth/3.281;
-    sonde2.depth = sonde2.depth/3.281;
-end
+    $
+sonde1.depth = sonde1.depth/3.281;
+sonde2.depth = sonde2.depth/3.281;
 
 % Convert [mg/L] to [umol/L]
 sonde1.DO_conc = sonde1.DO_conc/31.999*10^3;
@@ -143,85 +141,7 @@ paramUnits2 = ["","","","uS/cm","uS/cm","psu","ohm cm",...
 
 sonde2.Properties.VariableUnits = paramUnits2;
 
-%% Telemetered data plots (Deployments 1-2)
-
-red = [0.8500 0.3250 0.0980];   % BC sonde
-blue = [0 0.4470 0.7410];       % ERDC sonde
-
-figure,clf
-
-tl = tiledlayout(4,2,'TileSpacing','Tight');
-title(tl,[depSite,' Deployment #',num2str(depNum),' - Both Sondes'])
-xlabel(tl,'Time (UTC)')
-
-nexttile
-plot(sonde1.datetime_utc,sonde1.depth,'color',red)
-hold on
-plot(sonde2.datetime_utc,sonde2.depth,'color',blue)
-hold off
-title('Depth')
-ylabel('Depth (m)')
-xlim('tight')
-
-% Add a global legend to label sondes
-lg = legend('BC','ERDC');
-lg.Layout.Tile = 'north';
-
-nexttile
-plot(sonde2.datetime_utc,sonde2.pH,'color',blue)
-title('pH')
-ylabel('pH')
-xlim('tight')
-
-nexttile
-plot(sonde1.datetime_utc,sonde1.temperature,'color',red)
-hold on
-plot(sonde2.datetime_utc,sonde2.temperature,'color',blue)
-title('Temperature')
-ylabel('Temperature (^oC)')
-xlim('tight')
-
-nexttile
-plot(sonde1.datetime_utc,sonde1.DO_conc,'color',red)
-hold on
-plot(sonde2.datetime_utc,sonde2.DO_conc,'color',blue)
-hold off
-title('DO')
-ylabel('DO (\mumol/L)')
-xlim('tight')
-
-nexttile
-plot(sonde1.datetime_utc,sonde1.salinity,'color',red)
-hold on
-plot(sonde2.datetime_utc,sonde2.salinity,'color',blue)
-hold off
-title('Salinity')
-ylabel('Salinity (PSU)')
-xlim('tight')
-
-nexttile
-% plot(sonde1.datetime_utc,sonde1.ORP,'color',red)
-% hold on
-% plot(sonde2.datetime_utc,sonde2.ORP,'color',blue)
-% hold off
-% title('ORP')
-% ylabel('ORP (mV)')
-% xlim('tight')
-
-nexttile
-plot(sonde2.datetime_utc,sonde2.turbidity,'Color',blue)
-title('Turbidity')
-ylabel('Turbidity (NTU)')
-xlim('tight')
-
-nexttile
-plot(sonde1.datetime_utc,sonde1.chla,'color',red)
-title('Chl a')
-ylabel('Chl a (RFU)')
-xlim('tight')
-
-cd(['H:\My Drive\Postdoc\SMIIL\figures\open-water-platform-figures\',site])
-%% Internally logged data plots (Deployment 5 onwards)
+%% Plot data for both sondes together
 
 red = [0.8500 0.3250 0.0980];   % BC sonde
 blue = [0 0.4470 0.7410];       % ERDC sonde
