@@ -1,3 +1,15 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% plotAllDeployments.m
+% This script plots the entire record of data (8 plots; one for each parameter)
+% from one open-water platform for both sondes (BC and ERDC).
+%
+% AUTHOR:
+% Emily Chua 
+% 
+% DATE:
+% 9/27/2023
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 clear all;close all;clc
 
 site = 'gull';
@@ -15,7 +27,6 @@ for i = 1:length(dat)
     sonde2_all = [sonde2_all;dat{i}.sonde2];
 end
 
-%%
 cd(['H:\My Drive\Postdoc\SMIIL\figures\open-water-platform-figures\',site])
 
 % Global plotting settings
@@ -121,3 +132,5 @@ xlabel(XLabel)
 
 % Set these properties for all figures
 set([ax1 ax2 ax3 ax4 ax5 ax6 ax7 ax8],'FontSize',FontSize,'LineWidth',LineWidth,'XTick',XTick)
+
+cd(['H:\My Drive\Postdoc\SMIIL\figures\open-water-platform-figures\',site])
