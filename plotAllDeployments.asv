@@ -1,0 +1,70 @@
+clear all;close all;clc
+
+site = 'gull';
+
+cd(['H:\My Drive\Postdoc\SMIIL\raw-data\open-water-platform-data\',site])
+
+ds = fileDatastore(['H:\My Drive\Postdoc\SMIIL\raw-data\open-water-platform-data\',site],"ReadFcn",@load,"FileExtensions",".mat");
+
+dat = readall(ds);
+
+sonde1_all = table();
+sonde2_all = table();
+for i = 1:length(dat)
+    sonde1_all = [sonde1_all;dat{i}.sonde1];
+    sonde2_all = [sonde2_all;dat{i}.sonde2];
+end
+
+%%
+cd(['H:\My Drive\Postdoc\SMIIL\figures\open-water-platform-figures\',site])
+
+% Global plotting settings
+FontSize = 12;
+NumTicks = 13;
+LineWidth = 1;
+XTick = linspace(sonde1_all.datetime_utc(1),sonde1_all.datetime_utc(end),NumTicks);
+XLim = 
+XTickFormat = "M/yy";
+Legend = {'BC','ERDC'};
+red = [0.8500 0.3250 0.0980];   % BC sonde
+blue = [0 0.4470 0.7410];       % ERDC sonde
+
+
+figure,clf
+plot(sonde1_all.datetime_utc,sonde1_all.depth,'Color',red)
+hold on
+plot(sonde2_all.datetime_utc,sonde2_all.depth,'Color',blue);
+hold off
+ax1 = gcf().CurrentAxes;
+ylabel('Depth (m)')
+xlim('tight');ylim('tight')
+xtickformat(XTickFormat)
+legend('BC','ERDC')
+xlabel('Month/Year')
+
+figure,clf
+plot(sonde1_all.datetime_utc,sonde1_all.salinity,'Color',red)
+hold on
+plot(sonde2_all.datetime_utc,sonde2_all.salinity,'Color',blue)
+hold off
+ax2 = gcf().CurrentAxes;
+ylabel('Salinity (PSU)')
+xlim('tight');ylim('tight')
+xtickformat(XTickFormat)
+legend('BC','ERDC')
+xlabel('Month/Year')
+
+figure,clf
+plot(sonde1_all.datetime_utc,sonde1_all.temperature,'Color',red)
+hold on
+plot(sonde2_all.datetime_utc,sonde2_all.temperature,'Color',blue)
+hold off
+ax3 = gcf().CurrentAxes;
+ylabel('Temperature (^oC)')
+xlim('tight');ylim('tight')
+xtickformat(XTickFormat)
+legend('BC','ERDC')
+xlabel('Month/Year')
+
+set([ax1 ax2 ax3],'FontSize',FontSize,'LineWidth',LineWidth,'XTick',XTick,'XLim',XLim)
+
