@@ -12,7 +12,7 @@
 
 clear all;close all;clc
 
-site = 'gull';
+site = 'north'; % CHANGE THIS
 
 cd(['H:\My Drive\Postdoc\SMIIL\raw-data\open-water-platform-data\',site])
 
@@ -110,9 +110,10 @@ elseif depNum >= 5
     hold on
     plot(sonde2.datetime_utc,sonde2.depth,'color',blue)
     hold off
+    ax1 = gcf().CurrentAxes;
     title('Depth')
     ylabel('Depth (m)')
-    xlim('tight')
+    xlim('tight');ylim('tight')
 
     % Add a global legend to label sondes
     lg = legend('BC','ERDC');
@@ -124,7 +125,7 @@ elseif depNum >= 5
     plot(sonde2.datetime_utc,sonde2.pH,'color',blue)
     title('pH')
     ylabel('pH')
-    xlim('tight')
+    xlim(ax1.XLim);ylim('tight')
 
     nexttile(3)
     plot(sonde1.datetime_utc,sonde1.temperature,'color',red)
@@ -132,7 +133,7 @@ elseif depNum >= 5
     plot(sonde2.datetime_utc,sonde2.temperature,'color',blue)
     title('Temperature')
     ylabel('Temperature (^oC)')
-    xlim('tight')
+    xlim(ax1.XLim);ylim('tight')
 
     nexttile(4)
     plot(sonde1.datetime_utc,sonde1.DO_conc,'color',red)
@@ -141,7 +142,7 @@ elseif depNum >= 5
     hold off
     title('DO concentration')
     ylabel('DO (\mumol/L)')
-    xlim('tight')
+    xlim(ax1.XLim);ylim('tight')
 
     nexttile(5)
     plot(sonde1.datetime_utc,sonde1.salinity,'color',red)
@@ -150,7 +151,7 @@ elseif depNum >= 5
     hold off
     title('Salinity')
     ylabel('Salinity (PSU)')
-    xlim('tight')
+    xlim(ax1.XLim);ylim('tight')
 
     nexttile(6)
     plot(sonde1.datetime_utc,sonde1.ORP,'color',red)
@@ -159,19 +160,19 @@ elseif depNum >= 5
     hold off
     title('ORP')
     ylabel('ORP (mV)')
-    xlim('tight')
+    xlim(ax1.XLim);ylim('tight')
 
     nexttile(7)
     plot(sonde2.datetime_utc,sonde2.turbidity,'Color',blue)
     title('Turbidity')
     ylabel('Turbidity (NTU)')
-    xlim('tight')
+    xlim(ax1.XLim);ylim('tight')
 
     nexttile(8)
     plot(sonde1.datetime_utc,sonde1.chla,'color',red)
     title('Chl a')
     ylabel('Chl a (RFU)')
-    xlim('tight')
+    xlim(ax1.XLim);ylim('tight')
 
 end
 
