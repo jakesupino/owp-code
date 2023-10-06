@@ -27,16 +27,19 @@ for i = 1:length(dat)
     sonde1_all = [sonde1_all;dat{i}.sonde1];
 end
 
-for j = 1:length(dat)
-    if strcmp(site,'south') == 1
-        skipNum = [3,5];
+if strcmp(site,'south') == 1
+    skipNum = [3,5];
+    for j = 1:length(dat)
         if ~ismember(j,skipNum)
-            sonde2_all = [sonde2_all;dat{j}.sonde2];
+        sonde2_all = [sonde2_all;dat{j}.sonde2];
         end
-    else
+    end
+else
+    for j = 1:length(dat)
         sonde2_all = [sonde2_all;dat{j}.sonde2];
     end
 end
+
 
 cd(['G:\My Drive\Postdoc\SMIIL\figures\open-water-platform-figures\',site])
 

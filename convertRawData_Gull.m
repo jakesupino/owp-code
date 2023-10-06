@@ -15,7 +15,7 @@ clear all;close all;clc
 
 site = 'gull';
 
-cd(['H:\My Drive\Postdoc\SMIIL\raw-data\open-water-platform-data\',site])
+cd(['G:\My Drive\Postdoc\SMIIL\raw-data\open-water-platform-data\',site])
 
 % Interactively select files (from same deployment)
 [fileNames,dataPath] = uigetfile('*.csv','MultiSelect','on');
@@ -73,7 +73,7 @@ sonde2.Properties.VariableNames = paramNames2;
 sonde1 = sonde1(~any(ismissing(sonde1(:,1)),2),:);
 sonde2 = sonde2(~any(ismissing(sonde2(:,1)),2),:);
 
-% If not already present, create a column for datetime in UTC
+% Set timezones. If not present, create a column for datetime in UTC.
 if (depNum >= 1) && (depNum <= 2)
     sonde1.datetime_utc.TimeZone = 'UTC';
     sonde2.datetime_utc.TimeZone = 'UTC';
@@ -129,7 +129,6 @@ if depNum == 1 || depNum == 2
     p = array2table(NaN(height(sonde2),1),'VariableNames',"p");
     TDS = array2table(NaN(height(sonde2),1),'VariableNames',"TDS");
     pO2 = array2table(NaN(height(sonde2),1),'VariableNames',"pO2");
-    pH = array2table(NaN(height(sonde2),1),'VariableNames',"pH");
     pH_raw = array2table(NaN(height(sonde2),1),'VariableNames',"pH_raw");
     ORP = array2table(NaN(height(sonde2),1),'VariableNames',"ORP");
     external_voltage = array2table(NaN(height(sonde2),1),'VariableNames',"external_voltage");

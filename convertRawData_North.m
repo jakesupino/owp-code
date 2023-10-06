@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% convertRawData_Gull.m
+% convertRawData_North.m
 % This script reads in the raw .csv data from the North open-water platform 
 % for one deployment from both sondes (BC and ERDC).
 %
@@ -15,7 +15,7 @@ clear all;close all;clc
 
 site = 'north';
 
-cd(['H:\My Drive\Postdoc\SMIIL\raw-data\open-water-platform-data\',site])
+cd(['G:\My Drive\Postdoc\SMIIL\raw-data\open-water-platform-data\',site])
 
 % Interactively select files (from same deployment)
 [fileNames,dataPath] = uigetfile('*.csv','MultiSelect','on');
@@ -62,7 +62,7 @@ sonde2.Properties.VariableNames = paramNames2;
 sonde1 = sonde1(~any(ismissing(sonde1(:,1)),2),:);
 sonde2 = sonde2(~any(ismissing(sonde2(:,1)),2),:);
 
-% If not already present, create a column for datetime in UTC
+% Set timezones. If not present, create a column for datetime in UTC.
 if depNum == 2
     sonde1.datetime_utc.TimeZone = 'UTC';
     sonde2.datetime_utc.TimeZone = 'UTC';
@@ -101,7 +101,6 @@ if depNum == 2
     TDS = array2table(NaN(height(sonde1),1),'VariableNames',"TDS");
     pO2 = array2table(NaN(height(sonde1),1),'VariableNames',"pO2");
     DO_sat = array2table(NaN(height(sonde1),1),'VariableNames',"DO_sat");
-    pH = array2table(NaN(height(sonde1),1),'VariableNames',"pH");
     pH_raw = array2table(NaN(height(sonde1),1),'VariableNames',"pH_raw");
     ORP = array2table(NaN(height(sonde1),1),'VariableNames',"ORP");
     external_voltage = array2table(NaN(height(sonde1),1),'VariableNames',"external_voltage");
@@ -168,7 +167,7 @@ sonde1.DO_conc = sonde1.DO_conc/31.999*10^3;
 sonde2.DO_conc = sonde2.DO_conc/31.999*10^3;
 
 % Pressure: Convert [mbar] to [psi]
-if depNum == 10
+if depNum == 9 || depNum == 10
     sonde1.p = sonde1.p/68.9476;
 elseif depNum == 14
     sonde2.p = sonde2.p/68.9476;
