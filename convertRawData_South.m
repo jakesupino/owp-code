@@ -290,7 +290,7 @@ else
 end
 
 
-%===-Save created tables in .mat files=====================================
+%====Save created tables in .mat files=====================================
 option = questdlg('Save to .mat file?','Save File','Y','N','Y');
 
 switch option
