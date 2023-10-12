@@ -14,8 +14,6 @@ clear all;close all;clc
 
 site = 'gull'; % CHANGE THIS
 
-cd(['G:\My Drive\Postdoc\SMIIL\raw-data\open-water-platform-data\',site])
-
 ds = fileDatastore(['G:\My Drive\Postdoc\SMIIL\raw-data\open-water-platform-data\',site],"ReadFcn",@load,"FileExtensions",".mat");
 
 dat = readall(ds);
@@ -184,7 +182,6 @@ xtickformat(XTickFormat)
 legend(Legend{1})
 xlabel(XLabel)
 title(depSite)
-set(ax9,'FontSize',FontSize,'LineWidth',LineWidth,'XTick',XTick)
 
 % Set these properties for all figures
 set([ax1 ax2 ax3 ax4 ax5 ax6 ax7 ax8 ax9],'FontSize',FontSize,'LineWidth',LineWidth,'XTick',XTick)
