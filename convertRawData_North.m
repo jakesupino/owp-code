@@ -15,7 +15,7 @@ clear all;close all;clc
 
 site = 'north';
 
-cd(['G:\My Drive\Postdoc\SMIIL\raw-data\open-water-platform-data\',site])
+cd(['G:\My Drive\Postdoc\SMIIL\open-water-platform-data\raw-data\',site])
 
 % Interactively select files (from same deployment)
 [fileNames,dataPath] = uigetfile('*.csv','MultiSelect','on');

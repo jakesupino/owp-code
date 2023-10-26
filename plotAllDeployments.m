@@ -12,9 +12,9 @@
 
 clear all;close all;clc
 
-site = 'gull'; % CHANGE THIS
+site = 'south'; % CHANGE THIS
 
-ds = fileDatastore(['G:\My Drive\Postdoc\SMIIL\raw-data\open-water-platform-data\',site],"ReadFcn",@load,"FileExtensions",".mat");
+ds = fileDatastore(['G:\My Drive\Postdoc\SMIIL\open-water-platform-data\raw-data\',site],"ReadFcn",@load,"FileExtensions",".mat");
 
 dat = readall(ds);
 
@@ -35,8 +35,6 @@ for j = 1:length(dat)
         sonde2_all = [sonde2_all;dat{j}.sonde2];
     end
 end
-
-cd(['G:\My Drive\Postdoc\SMIIL\figures\open-water-platform-figures\',site])
 
 % Format the site name for plotting
 depSite = [upper(site(1)),site(2:end)];
@@ -186,10 +184,19 @@ title(depSite)
 % Set these properties for all figures
 set([ax1 ax2 ax3 ax4 ax5 ax6 ax7 ax8 ax9],'FontSize',FontSize,'LineWidth',LineWidth,'XTick',XTick)
 
-cd(['G:\My Drive\Postdoc\SMIIL\figures\open-water-platform-figures\',site])
+%====Save created tables in .mat files=====================================
+option = questdlg('Save data tables to .mat file?','Save File','Y','N','Y');
+switch option
+    case 'Y'
+        save('alldeps.mat',"sonde1_all","sonde2_all")
+        disp('File saved!')
+    case 'N'
+        disp('File not saved.')
+end
 
 %===Option to save plots===================================================
-option = questdlg('Save as .png and .fig?','Save plots','Y','N','Y');
+cd(['G:\My Drive\Postdoc\SMIIL\figures\open-water-platform-figures\',site])
+option = questdlg('Save plots as .png and .fig?','Save plots','Y','N','Y');
 
 switch option
     case 'Y'
@@ -220,7 +227,7 @@ switch option
         saveas(fig9,'alldeps-chla.png')
         saveas(fig9,'alldeps-chla.fig')
 
-        disp(['Plots saved!'])
+        disp('Plots saved!')
     case 'N'
-        disp(['Plots not saved!'])
+        disp('Plots not saved!')
 end

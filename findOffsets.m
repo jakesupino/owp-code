@@ -1,7 +1,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% findTimeOffset.m
-% This script finds whether there is a time offset between the two sondes
-% (BC and ERDC) by deployment.
+% findOffset.m
+% This script plots the depth data from both the BC and ERDC sondes with
+% the tidal elevation data from USGS to help identify depth offsets between
+% sondes, and time offsets from UTC.
 %
 % AUTHOR:
 % Emily Chua
@@ -13,7 +14,7 @@
 %===Read in sonde data=====================================================
 clear all;close all;clc
 
-site = 'south'; % CHANGE THIS
+site = 'gull'; % CHANGE THIS
 
 ds = fileDatastore(['G:\My Drive\Postdoc\SMIIL\raw-data\open-water-platform-data\',site],"ReadFcn",@load,"FileExtensions",'.mat');
 
@@ -46,16 +47,22 @@ LineWidth = 1;
 for i = 1:length(dat)
     fig1 = figure(1);
     fig1.WindowState = 'maximized';
-    h3 = plot(usgs.datetime_utc,usgs.tidal_elev,'k'); if strcmp(site,'south') == 1
+    h3 = plot(usgs.datetime_utc,usgs.tidal_elev,'k'); 
     hold on
     h1 = plot(dat{i}.sonde1.datetime_utc,dat{i}.sonde1.depth,'Color',red);
     
-    skipNum = [3,5];
+    if strcmp(site,'south') == 1
+        skipNum = [3,5]; % Deployments to skip
         if ~ismember(i,skipNum)
             h2 = plot(dat{i}.sonde2.datetime_utc,dat{i}.sonde2.depth,'Color',blue);
+            legend([h1 h2 h3],'BC','ERDC','USGS')
+        else
+            % Don't plot sonde2 data for skipped deployments
+            legend([h1 h3],'BC','USGS')
         end
     else
         h2 = plot(dat{i}.sonde2.datetime_utc,dat{i}.sonde2.depth,'Color',blue);
+        legend([h1 h2 h3],'BC','ERDC','USGS')
     end
     hold off
     xlim([min(dat{i}.sonde1.datetime_utc) max(dat{i}.sonde1.datetime_utc)])

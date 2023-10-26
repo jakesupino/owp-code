@@ -14,7 +14,7 @@ clear all;close all;clc
 
 site = 'south'; % CHANGE THIS
 
-cd(['G:\My Drive\Postdoc\SMIIL\raw-data\open-water-platform-data\',site])
+cd(['G:\My Drive\Postdoc\SMIIL\open-water-platform-data\raw-data\',site])
 
 [fileName,dataPath] = uigetfile('*.mat');
 
