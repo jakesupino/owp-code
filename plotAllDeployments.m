@@ -12,7 +12,9 @@
 
 clear all;close all;clc
 
-site = 'south'; % CHANGE THIS
+fig = uifigure;
+site = uiconfirm(fig,"Select the platform","Site selection","Options",["gull","north","south"]);
+close(fig)
 
 ds = fileDatastore(['G:\My Drive\Postdoc\SMIIL\open-water-platform-data\raw-data\',site],"ReadFcn",@load,"FileExtensions",".mat");
 
@@ -22,7 +24,14 @@ sonde1_all = table();
 sonde2_all = table();
 
 for i = 1:length(dat)
-    sonde1_all = [sonde1_all;dat{i}.sonde1];
+    if strcmp(site,'south') == 1
+        skipNum = 14;
+        if ~ismember(i,skipNum)
+            sonde1_all = [sonde1_all;dat{i}.sonde1];
+        end
+    else
+        sonde1_all = [sonde1_all;dat{i}.sonde1];
+    end
 end
 
 for j = 1:length(dat)
@@ -41,7 +50,7 @@ depSite = [upper(site(1)),site(2:end)];
 
 % Global plotting settings
 dt1 = datetime('29-Jun-2021','TimeZone','UTC');     % Make all plots have same start date
-dt2 = sonde1_all.datetime_utc(end);  
+dt2 = max(sonde1_all.datetime_utc(end), sonde2_all.datetime_utc(end));
 NumTicks = 13;
 XTick = linspace(dt1,dt2,NumTicks);
 XTickFormat = "M/yy";
@@ -185,10 +194,11 @@ title(depSite)
 set([ax1 ax2 ax3 ax4 ax5 ax6 ax7 ax8 ax9],'FontSize',FontSize,'LineWidth',LineWidth,'XTick',XTick)
 
 %====Save created tables in .mat files=====================================
-option = questdlg('Save data tables to .mat file?','Save File','Y','N','Y');
+cd('G:\My Drive\Postdoc\SMIIL\open-water-platform-data\merged-data')
+option = questdlg(['Save .mat file in SMIIL\open-water-platform-data\merged-data?'],'Save File','Y','N','Y');
 switch option
     case 'Y'
-        save('alldeps.mat',"sonde1_all","sonde2_all")
+        save(['alldeps-',site,'.mat'],"sonde1_all","sonde2_all")
         disp('File saved!')
     case 'N'
         disp('File not saved.')

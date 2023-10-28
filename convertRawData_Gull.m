@@ -51,7 +51,7 @@ elseif depNum == 6
     paramNames2 = ["datetime_local","datetime_utc","actual_cond","specific_cond","salinity","resistivity",...
         "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","turbidity",...
         "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
-elseif (depNum >= 7) && (depNum <= 14)
+elseif (depNum >= 7) && (depNum <= 15)
     paramNames1 = ["datetime_local","actual_cond","specific_cond","salinity","resistivity",...
         "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","chla",...
         "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
@@ -82,7 +82,7 @@ elseif (depNum >= 5) && (depNum <= 6)
     sonde1.datetime_utc.TimeZone = 'UTC';
     sonde2.datetime_local.TimeZone = 'America/New_York';
     sonde2.datetime_utc.TimeZone = 'UTC';
-elseif (depNum >= 7) && (depNum <= 14)
+elseif (depNum >= 7) && (depNum <= 15)
     sonde1.datetime_local.TimeZone = 'America/New_York';
     datetime_utc1 = datetime(sonde1.datetime_local,'TimeZone','UTC');
     datetime_utc1 = table(datetime_utc1,'VariableNames',"datetime_utc");
@@ -142,7 +142,7 @@ if depNum == 1 || depNum == 2
         sonde2 = [DO_sat sonde2];
     end
 
-elseif (depNum >= 5) && (depNum <= 14)
+elseif (depNum >= 5) && (depNum <= 15)
     nitrate = array2table(NaN(height(sonde1),1),'VariableNames',"nitrate");
     sonde1 = [nitrate sonde1];
 end
@@ -154,7 +154,7 @@ if depNum == 11
     sonde1.depth = sonde1.depth/3.281;
 elseif depNum == 9 || depNum == 13
     sonde2.depth = sonde2.depth/3.281;
-elseif depNum == 14
+elseif depNum == 14 || depNum == 15
     sonde1.depth = sonde1.depth/3.281;
     sonde2.depth = sonde2.depth/3.281;
 end
@@ -197,7 +197,7 @@ sonde1.Properties.VariableUnits = paramUnits1;
 sonde2.Properties.VariableUnits = paramUnits2;
 
 %====Save created tables in .mat files=====================================
-option = questdlg('Save to .mat file?','Save File','Y','N','Y');
+option = questdlg(['Save .mat file in SMIIL\open-water-platform-data\raw-data\',site,'?'],'Save File','Y','N','Y');
 
 switch option
     case 'Y'

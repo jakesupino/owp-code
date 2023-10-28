@@ -35,7 +35,7 @@ blue = [0 0.4470 0.7410];       % ERDC sonde
 
 figure,clf
 tl = tiledlayout(4,2,'TileSpacing','Tight');
-title(tl,[depSite,' Deployment #',num2str(depNum),' - Both Sondes'])
+title(tl,[site,' Deployment #',num2str(depNum),' - Both Sondes'])
 xlabel(tl,'Time (UTC)')
 
 switch depNum
@@ -100,7 +100,7 @@ switch depNum
 
     % Plots if one or more sondes were internally logged (Deployment 4 onwards)
     case{4,5,6,7,8,9,10,11,12,13,14,15}
-        if strcmp(site,'south') == 1
+        if strcmp(site,'South') == 1
             if depNum == 4 || depNum == 6
                 nexttile(1)
                 plot(sonde1.datetime_utc,sonde1.depth,'color',red)

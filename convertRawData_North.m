@@ -40,7 +40,7 @@ elseif depNum == 6
         "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
     paramNames2 = ["datetime_utc","depth","temperature","salinity","specific_cond","turbidity",...
         "pH","pH_raw","DO_conc","DO_sat"];
-elseif (depNum >= 7) && (depNum <= 14)
+elseif (depNum >= 7) && (depNum <= 15)
     paramNames1 = ["datetime_local","actual_cond","specific_cond","salinity","resistivity",...
         "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","chla",...
         "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
@@ -70,7 +70,7 @@ elseif depNum == 6
     sonde1.datetime_local.TimeZone = 'America/New_York';
     sonde1.datetime_utc.TimeZone = 'UTC';
     sonde2.datetime_utc.TimeZone = 'UTC';
-elseif (depNum >= 7) && (depNum <= 14)
+elseif (depNum >= 7) && (depNum <= 15)
     sonde1.datetime_local.TimeZone = 'America/New_York';
     datetime_utc1 = datetime(sonde1.datetime_local,'TimeZone','UTC');
     datetime_utc1 = table(datetime_utc1,'VariableNames',"datetime_utc");
@@ -144,7 +144,7 @@ elseif depNum == 6
     battery_capacity = array2table(NaN(height(sonde2),1),'VariableNames',"battery_capacity");
     sonde2 = [datetime_local actual_cond resistivity density barometric_p p TDS pO2 ORP external_voltage battery_capacity sonde2];
     
-elseif depNum >= 7 && depNum <= 14
+elseif depNum >= 7 && depNum <= 15
     % sonde1 (BC)
     nitrate = array2table(NaN(height(sonde1),1),'VariableNames',"nitrate");
     sonde1 = [nitrate sonde1];
@@ -155,7 +155,7 @@ end
 % Depth: Convert [ft] to [m]
 if depNum == 11 || depNum == 14
     sonde1.depth = sonde1.depth/3.281;
-elseif depNum == 9 || depNum == 10
+elseif depNum == 9 || depNum == 10 || depNum == 15
     sonde2.depth = sonde2.depth/3.281;
 elseif depNum == 13
     sonde1.depth = sonde1.depth/3.281;
@@ -167,7 +167,7 @@ sonde1.DO_conc = sonde1.DO_conc/31.999*10^3;
 sonde2.DO_conc = sonde2.DO_conc/31.999*10^3;
 
 % Pressure: Convert [mbar] to [psi]
-if depNum == 9 || depNum == 10
+if depNum == 9 || depNum == 10 || depNum == 15
     sonde1.p = sonde1.p/68.9476;
 elseif depNum == 14
     sonde2.p = sonde2.p/68.9476;
@@ -203,7 +203,7 @@ sonde1.Properties.VariableUnits = paramUnits1;
 sonde2.Properties.VariableUnits = paramUnits2;
 
 %===-Save created tables in .mat files=====================================
-option = questdlg('Save to .mat file?','Save File','Y','N','Y');
+option = questdlg(['Save .mat file in SMIIL\open-water-platform-data\raw-data\',site,'?'],'Save File','Y','N','Y');
 
 switch option
     case 'Y'

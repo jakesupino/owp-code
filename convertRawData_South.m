@@ -23,12 +23,18 @@ cd(['G:\My Drive\Postdoc\SMIIL\open-water-platform-data\raw-data\',site])
 if numel(fileNames) == 2
     fileName1 = extractBefore(fileNames{1},'.csv');
     fileName2 = extractBefore(fileNames{2},'.csv');
+    depNum = extractBetween(fileName1,"dep","-");
 else
-    fileName1 = extractBefore(fileNames,'.csv');    
+    sonde = extractBefore(extractAfter(fileNames,13),5);
+    switch sonde
+        case{'bc'}
+        fileName1 = extractBefore(fileNames,'.csv');
+        depNum = extractBetween(fileName1,"dep","-");
+        case{'erdc'}
+        fileName2 = extractBefore(fileNames,'.csv');
+        depNum = extractBetween(fileName2,"dep","-");
+    end
 end
-
-% Extract the deployment number from the filename and make a column to add to data table
-depNum = extractBetween(fileName1,"dep","-");
 depNum = str2double(depNum);
 
 % Extract the site from the filepath for plotting later
@@ -36,43 +42,55 @@ depSite = extractBetween(dataPath,'platform-data\','\');
 depSite = [upper(depSite{1}(1)),depSite{1}(2:end)];
 
 % Name parameters based on order in .csv file
-if depNum == 1 || depNum == 2
+switch depNum
+    case{1, 2}
     paramNames1 = ["datetime_utc","depth","temperature","salinity","chla","nitrate","DO_conc"];
     paramNames2 = ["datetime_utc","depth","temperature","salinity","turbidity","pH","DO_conc"];
-elseif depNum == 4
+    
+    case{4}
     paramNames1 = ["datetime_local","nitrate","nitrate_raw","specific_cond","salinity",...
         "DO_conc","DO_sat","pO2","chla","temperature","external_voltage","depth"];
-elseif depNum == 5
+    
+    case{5}
     paramNames1 = ["datetime_local","datetime_utc","actual_cond","specific_cond","salinity","resistivity",...
         "density","TDS","DO_conc","DO_sat","pO2","chla",...
         "temperature","barometric_p","p","depth"];
     paramNames2 = ["datetime_local","datetime_utc","actual_cond","specific_cond","salinity","resistivity",...
         "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","turbidity",...
         "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
-elseif depNum == 6
+
+    case{6}
     paramNames1 = ["datetime_utc","depth","temperature","salinity",...
         "specific_cond","chla","pH","pH_raw","DO_conc","DO_sat"];
-elseif depNum == 7
+
+    case{7}
     paramNames1 = ["datetime_local","chla","actual_cond","specific_cond","salinity","resistivity",...
         "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP",...
         "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
-     paramNames2 = ["datetime_local","actual_cond","specific_cond","salinity","resistivity",...
-        "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","turbidity",...
-        "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
-elseif (depNum == 8) || (depNum >= 10) && (depNum <= 14)
-    paramNames1 = ["datetime_local","actual_cond","specific_cond","salinity","resistivity",...
-        "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","chla",...
-        "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
     paramNames2 = ["datetime_local","actual_cond","specific_cond","salinity","resistivity",...
         "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","turbidity",...
         "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
-elseif (depNum == 9)
+    
+    case{9}
     paramNames1 = ["datetime_local","actual_cond","specific_cond","salinity","resistivity",...
         "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","chla",...
         "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
     paramNames2 = ["datetime_local","actual_cond","specific_cond","salinity","resistivity",...
         "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","chla",...
         "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
+    
+    case{8,10,11,12,13,14}
+    paramNames1 = ["datetime_local","actual_cond","specific_cond","salinity","resistivity",...
+        "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","chla",...
+        "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
+    paramNames2 = ["datetime_local","actual_cond","specific_cond","salinity","resistivity",...
+        "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","turbidity",...
+        "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
+
+    case{15}
+        paramNames2 = ["datetime_local","actual_cond","specific_cond","salinity","resistivity",...
+            "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","turbidity",...
+            "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
 end
 
 if numel(fileNames) == 2
@@ -83,9 +101,14 @@ if numel(fileNames) == 2
     sonde2 = readtable([dataPath,fileName2],'TextType','string');
     sonde2.Properties.VariableNames = paramNames2;
 else
-    % sonde 1 = BC sonde
-    sonde1 = readtable([dataPath,fileName1],'TextType','string');
-    sonde1.Properties.VariableNames = paramNames1;
+    switch sonde
+        case{'bc'}
+            sonde1 = readtable([dataPath,fileName1],'TextType','string');
+            sonde1.Properties.VariableNames = paramNames1;
+        case{'erdc'}
+            sonde2 = readtable([dataPath,fileName2],'TextType','string');
+            sonde2.Properties.VariableNames = paramNames2;
+    end
 end
 
 %===Adjust properties======================================================
@@ -99,31 +122,45 @@ if numel(fileNames) == 2
     depNumCol = array2table(repmat(depNum,height(sonde2),1),'VariableNames',"deployment");
     sonde2 = [depNumCol,sonde2];
 else
-    % Remove rows with missing datetime, NaT (headers; also, some files have log notes at end)
-    sonde1 = sonde1(~any(ismissing(sonde1(:,1)),2),:);
-    % Create a column for the deployment number
-    depNumCol = array2table(repmat(depNum,height(sonde1),1),'VariableNames',"deployment");
-    sonde1 = [depNumCol,sonde1];
+    switch sonde
+        case{'bc'}
+            % Remove rows with missing datetime, NaT (headers; also, some files have log notes at end)
+            sonde1 = sonde1(~any(ismissing(sonde1(:,1)),2),:);
+            % Create a column for the deployment number
+            depNumCol = array2table(repmat(depNum,height(sonde1),1),'VariableNames',"deployment");
+            sonde1 = [depNumCol,sonde1];
+        case{'erdc'}
+            % Remove rows with missing datetime, NaT (headers; also, some files have log notes at end)
+            sonde2 = sonde2(~any(ismissing(sonde2(:,1)),2),:);
+            % Create a column for the deployment number
+            depNumCol = array2table(repmat(depNum,height(sonde2),1),'VariableNames',"deployment");
+            sonde2 = [depNumCol,sonde2];
+    end
 end
 
 % Set timezones. If not present, create a column for datetime in UTC.
-if depNum == 1 || depNum == 2
+switch depNum
+    case{1,2}
     sonde1.datetime_utc.TimeZone = 'UTC';
     sonde2.datetime_utc.TimeZone = 'UTC';
-elseif depNum == 4
+
+    case{4}
     sonde1.datetime_local.TimeZone = 'America/New_York';
     datetime_utc1 = datetime(sonde1.datetime_local,'TimeZone','UTC');
     datetime_utc1 = table(datetime_utc1,'VariableNames',"datetime_utc");
     sonde1 = [datetime_utc1,sonde1];
-elseif depNum == 5
+
+    case{5}
     sonde1.datetime_local.TimeZone = 'America/New_York';
     sonde2.datetime_local.TimeZone = 'America/New_York';
     sonde1.datetime_utc.TimeZone = 'UTC';
     datetime_utc2 = datetime(sonde2.datetime_local,'TimeZone','UTC');
     sonde2.datetime_utc = datetime_utc2;    % Had a datetime UTC column, but empty of values
-elseif depNum == 6
+
+    case{6}
     sonde1.datetime_utc.TimeZone = 'America/New_York';
-elseif (depNum >= 7) && (depNum <= 14)
+
+    case{7,8,9,10,11,12,13,14}
     sonde1.datetime_local.TimeZone = 'America/New_York';
     datetime_utc1 = datetime(sonde1.datetime_local,'TimeZone','UTC');
     datetime_utc1 = table(datetime_utc1,'VariableNames',"datetime_utc");
@@ -132,6 +169,13 @@ elseif (depNum >= 7) && (depNum <= 14)
     datetime_utc2 = datetime(sonde2.datetime_local,'TimeZone','UTC');
     datetime_utc2 = table(datetime_utc2,'VariableNames',"datetime_utc");
     sonde2 = [datetime_utc2,sonde2];
+
+    case{15}
+    sonde2.datetime_local.TimeZone = 'America/New_York';
+    datetime_utc2 = datetime(sonde2.datetime_local,'TimeZone','UTC');
+    datetime_utc2 = table(datetime_utc2,'VariableNames',"datetime_utc");
+    sonde2 = [datetime_utc2,sonde2];
+
 end
 
 % Create columns filled with NaNs for parameters not measured
@@ -244,7 +288,12 @@ if numel(fileNames) == 2
     sonde1.DO_conc = sonde1.DO_conc/31.999*10^3;
     sonde2.DO_conc = sonde2.DO_conc/31.999*10^3;
 else
-    sonde1.DO_conc = sonde1.DO_conc/31.999*10^3;
+    switch sonde
+        case{'bc'}
+            sonde1.DO_conc = sonde1.DO_conc/31.999*10^3;
+        case{'erdc'}
+            sonde2.DO_conc = sonde2.DO_conc/31.999*10^3;
+    end
 end
 
 % Pressure: Convert [mbar] to [psi]
@@ -278,29 +327,49 @@ if numel(fileNames) == 2
     sonde1.Properties.VariableUnits = paramUnits1;
     sonde2.Properties.VariableUnits = paramUnits2;
 else
-    sonde1 = sonde1(:,{'deployment' 'datetime_utc' 'datetime_local' ...
-        'actual_cond' 'specific_cond' 'salinity' 'resistivity' 'density' ...
-        'temperature' 'barometric_p' 'p' 'depth' 'TDS' 'DO_conc' 'DO_sat' 'pO2' ...
-        'pH' 'pH_raw' 'ORP' 'chla' 'nitrate' 'external_voltage' 'battery_capacity'});
-    paramUnits1 = ["","","",...
-    "uS/cm","uS/cm","psu","ohm cm","g/cm3",...
-    "degC","mmHg","psi","m","ppt","umol/L","%sat","torr",...
-    "","mV","mV","mg/L","RFU","V","%"];
-    sonde1.Properties.VariableUnits = paramUnits1;
+    switch sonde
+        case{'bc'}
+            sonde1 = sonde1(:,{'deployment' 'datetime_utc' 'datetime_local' ...
+                'actual_cond' 'specific_cond' 'salinity' 'resistivity' 'density' ...
+                'temperature' 'barometric_p' 'p' 'depth' 'TDS' 'DO_conc' 'DO_sat' 'pO2' ...
+                'pH' 'pH_raw' 'ORP' 'chla' 'nitrate' 'external_voltage' 'battery_capacity'});
+            paramUnits1 = ["","","",...
+                "uS/cm","uS/cm","psu","ohm cm","g/cm3",...
+                "degC","mmHg","psi","m","ppt","umol/L","%sat","torr",...
+                "","mV","mV","mg/L","RFU","V","%"];
+            sonde1.Properties.VariableUnits = paramUnits1;
+        case{'erdc'}
+            sonde2 = sonde2(:,{'deployment' 'datetime_utc' 'datetime_local' ...
+                'actual_cond' 'specific_cond' 'salinity' 'resistivity' 'density' ...
+                'temperature' 'barometric_p' 'p' 'depth' 'TDS' 'DO_conc' 'DO_sat' 'pO2' ...
+                'pH' 'pH_raw' 'ORP' 'turbidity' 'external_voltage' 'battery_capacity'});
+            paramUnits2 = ["","","",...
+                "uS/cm","uS/cm","psu","ohm cm","g/cm3",...
+                "degC","mmHg","psi","m","ppt","umol/L","%sat","torr",...
+                "","mV","mV","NTU","V","%"];
+            sonde2.Properties.VariableUnits = paramUnits2;
+    end
 end
 
 
 %====Save created tables in .mat files=====================================
-option = questdlg('Save to .mat file?','Save File','Y','N','Y');
+option = questdlg(['Save .mat file in SMIIL\open-water-platform-data\raw-data\',site,'?'],'Save File','Y','N','Y');
+cd(dataPath)
 
 switch option
     case 'Y'
-        cd(dataPath)
-        saveFileName = extractBefore(fileName1,'-bc');
         if numel(fileNames) == 2
+            saveFileName = extractBefore(fileName1,'-bc');
             save([saveFileName,'.mat'],"sonde1","sonde2")
         else
-            save([saveFileName,'.mat'],"sonde1")
+            switch sonde
+                case{'bc'}
+                    saveFileName = extractBefore(fileName1,'-bc');
+                    save([saveFileName,'.mat'],"sonde1")
+                case{'erdc'}
+                    saveFileName = extractBefore(fileName2,'-erdc');
+                    save([saveFileName,'.mat'],"sonde2")
+            end
         end
         disp('File saved!')
     case 'N'
