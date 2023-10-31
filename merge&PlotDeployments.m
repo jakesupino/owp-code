@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% plotAllDeployments.m
-% This script plots the entire record of data (8 plots; one for each parameter)
-% from one open-water platform for both sondes (BC and ERDC).
+% merge&PlotDeployments.m
+% This script merges and plots the entire record of data (8 plots; one for 
+% each parameter) from one open-water platform for both sondes (BC and ERDC).
 %
 % AUTHOR:
 % Emily Chua 
@@ -12,11 +12,22 @@
 
 clear all;close all;clc
 
+rootpath = 'G:\My Drive\Postdoc\';
+
 fig = uifigure;
 site = uiconfirm(fig,"Select the platform","Site selection","Options",["gull","north","south"]);
 close(fig)
 
-ds = fileDatastore(['G:\My Drive\Postdoc\SMIIL\open-water-platform-data\raw-data\',site],"ReadFcn",@load,"FileExtensions",".mat");
+fig = uifigure;
+dataset = uiconfirm(fig,"Plot original or adjusted data?","Dataset","Options",["original","adjusted"]);
+close(fig)
+
+switch dataset
+    case "original"
+        ds = fileDatastore([rootpath,'SMIIL\open-water-platform-data\',site,'\original\deployments'],"ReadFcn",@load,"FileExtensions",".mat");
+    case "adjusted"
+        ds = fileDatastore([rootpath,'SMIIL\open-water-platform-data\',site,'\adjusted\deployments'],"ReadFcn",@load,"FileExtensions",".mat");
+end
 
 dat = readall(ds);
 
@@ -25,7 +36,7 @@ sonde2_all = table();
 
 for i = 1:length(dat)
     if strcmp(site,'south') == 1
-        skipNum = 14;
+        skipNum = 14;   % Skip sonde2 data for South Deployment 15
         if ~ismember(i,skipNum)
             sonde1_all = [sonde1_all;dat{i}.sonde1];
         end
@@ -36,7 +47,7 @@ end
 
 for j = 1:length(dat)
     if strcmp(site,'south') == 1
-        skipNum = [3,5];
+        skipNum = [3,5];    % Skip sonde1 data for South Deployments 4 & 6
         if ~ismember(j,skipNum)
             sonde2_all = [sonde2_all;dat{j}.sonde2];
         end
@@ -70,7 +81,8 @@ hold off
 ax1 = gcf().CurrentAxes;
 ylabel('Depth (m)')
 xlim([dt1 dt2])                 % Use same x limits for comparing sites
-ylim([0 14])                    % Use same y limits for comparing sites
+% ylim([0 14])
+ylim([-0.5 4])                    % Use same y limits for comparing sites
 xtickformat(XTickFormat)
 legend(Legend)
 xlabel(XLabel)
@@ -83,8 +95,9 @@ hold on
 plot(sonde2_all.datetime_utc,sonde2_all.p,'Color',blue)
 hold off
 ylabel('Pressure (psi)')
-xlim([dt1 dt2])              
-ylim([0 25])
+xlim([dt1 dt2])    
+% ylim([0 30])
+ylim([-0.5 5.5])
 ax2 = gcf().CurrentAxes;
 xtickformat(XTickFormat)
 legend(Legend)
@@ -190,23 +203,42 @@ legend(Legend{1})
 xlabel(XLabel)
 title(depSite)
 
-% Set these properties for all figures
+% Set same properties for all figures
 set([ax1 ax2 ax3 ax4 ax5 ax6 ax7 ax8 ax9],'FontSize',FontSize,'LineWidth',LineWidth,'XTick',XTick)
 
 %====Save created tables in .mat files=====================================
-cd('G:\My Drive\Postdoc\SMIIL\open-water-platform-data\merged-data')
-option = questdlg(['Save .mat file in SMIIL\open-water-platform-data\merged-data?'],'Save File','Y','N','Y');
+switch dataset
+    case "original"
+        saveFilePath = ['SMIIL\open-water-platform-data\',site,'\original\merged'];
+    case "adjusted"
+        saveFilePath = ['SMIIL\open-water-platform-data\',site,'\adjusted\merged'];
+end
+option = questdlg(['Save .mat file in ',saveFilePath,'?'],'Save File','Y','N','Y');
+cd([rootpath,saveFilePath])
+
 switch option
     case 'Y'
-        save(['alldeps-',site,'.mat'],"sonde1_all","sonde2_all")
+        switch dataset
+            case "original"
+                save(['alldeps-',site,'-raw.mat'],"sonde1_all","sonde2_all")
+            case "adjusted"
+                save(['alldeps-',site,'-adj.mat'],"sonde1_all","sonde2_all")
+        end
         disp('File saved!')
     case 'N'
         disp('File not saved.')
 end
 
 %===Option to save plots===================================================
-cd(['G:\My Drive\Postdoc\SMIIL\figures\open-water-platform-figures\',site])
-option = questdlg('Save plots as .png and .fig?','Save plots','Y','N','Y');
+switch dataset
+    case "original"
+        saveFilePath = ['SMIIL\figures\open-water-platform-figures\',site,'\original\merged'];
+    case "adjusted"
+        saveFilePath = ['SMIIL\figures\open-water-platform-figures\',site,'\adjusted\merged'];
+end
+
+option = questdlg(['Save plots as .png and .fig in ',saveFilePath,'?'],'Save plots','Y','N','Y');
+cd([rootpath,saveFilePath])
 
 switch option
     case 'Y'

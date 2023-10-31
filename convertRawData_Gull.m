@@ -15,7 +15,7 @@ clear all;close all;clc
 
 site = 'gull';
 
-cd(['G:\My Drive\Postdoc\SMIIL\open-water-platform-data\raw-data\',site])
+cd(['G:\My Drive\Postdoc\SMIIL\open-water-platform-data\',site,'\original\deployments'])
 
 % Interactively select files (from same deployment)
 [fileNames,dataPath] = uigetfile('*.csv','MultiSelect','on');
@@ -197,11 +197,10 @@ sonde1.Properties.VariableUnits = paramUnits1;
 sonde2.Properties.VariableUnits = paramUnits2;
 
 %====Save created tables in .mat files=====================================
-option = questdlg(['Save .mat file in SMIIL\open-water-platform-data\raw-data\',site,'?'],'Save File','Y','N','Y');
+option = questdlg(['Save .mat file in SMIIL\open-water-platform-data\',site,'\original\deployments?'],'Save File','Y','N','Y');
 
 switch option
     case 'Y'
-        cd(dataPath)
         saveFileName = extractBefore(fileName1,'-bc');
         save([saveFileName,'.mat'],"sonde1","sonde2")
         disp('File saved!')

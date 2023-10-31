@@ -12,19 +12,33 @@
 
 clear all;close all;clc
 
+rootpath = 'G:\My Drive\Postdoc\';
+
 fig = uifigure;
 site = uiconfirm(fig,"Select the platform","Site selection","Options",["gull","north","south"]);
 close(fig)
 
-cd(['G:\My Drive\Postdoc\SMIIL\open-water-platform-data\raw-data\',site])
+fig = uifigure;
+dataset = uiconfirm(fig,"Select the dataset","Dataset","Options",["original","adjusted"]);
+close(fig)
+
+switch dataset
+    case "original"
+        cd(['G:\My Drive\Postdoc\SMIIL\open-water-platform-data\',site,'\original\deployments']);
+    case "adjusted"
+        cd(['G:\My Drive\Postdoc\SMIIL\open-water-platform-data\',site,'\adjusted\deployments']);
+end
 
 [fileName,dataPath] = uigetfile('*.mat');
 
 load(fileName);
 
-% Extract the deployment number from the filename and make a column to add to data table
+% Extract the deployment number and date from the filename
 depNum = extractBetween(fileName,"dep","-");
 depNum = str2double(depNum);
+
+depDate = extractBetween(fileName,"-",".mat");
+depDate = str2double(depDate);
 
 % Format the site name for plotting
 depSite = [upper(site(1)),site(2:end)];
@@ -33,7 +47,8 @@ depSite = [upper(site(1)),site(2:end)];
 red = [0.8500 0.3250 0.0980];   % BC sonde
 blue = [0 0.4470 0.7410];       % ERDC sonde
 
-figure,clf
+fig1 = figure(1);
+fig1.WindowState = 'maximized';
 tl = tiledlayout(4,2,'TileSpacing','Tight');
 title(tl,[depSite,' Deployment #',num2str(depNum),' - Both Sondes'])
 xlabel(tl,'Time (UTC)')
@@ -266,4 +281,22 @@ switch depNum
         end
 end
 
-cd(['G:\My Drive\Postdoc\SMIIL\figures\open-water-platform-figures\',site])
+%===Option to save plots===================================================
+switch dataset
+    case "original"
+        saveFilePath = ['SMIIL\figures\open-water-platform-figures\',site,'\original\deployments'];
+    case "adjusted"
+        saveFilePath = ['SMIIL\figures\open-water-platform-figures\',site,'\adjusted\deployments'];
+end
+
+option = questdlg(['Save plots as .png and .fig in ',saveFilePath,'?'],'Save plots','Y','N','Y');
+cd([rootpath,saveFilePath])
+
+switch option
+    case 'Y'
+        saveas(fig1,['dep',num2str(depNum),'-',num2str(depDate),'.fig'])
+        saveas(fig1,['dep',num2str(depNum),'-',num2str(depDate),'.png'])
+        disp('Plots saved!')
+    case 'N'
+        disp('Plots not saved!')
+end

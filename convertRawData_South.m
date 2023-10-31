@@ -15,7 +15,7 @@ clear all;close all;clc
 
 site = 'south';
 
-cd(['G:\My Drive\Postdoc\SMIIL\open-water-platform-data\raw-data\',site])
+cd(['G:\My Drive\Postdoc\SMIIL\open-water-platform-data\',site,'\original\deployments'])
 
 % Interactively select files (from same deployment)
 [fileNames,dataPath] = uigetfile('*.csv','MultiSelect','on');
@@ -353,8 +353,7 @@ end
 
 
 %====Save created tables in .mat files=====================================
-option = questdlg(['Save .mat file in SMIIL\open-water-platform-data\raw-data\',site,'?'],'Save File','Y','N','Y');
-cd(dataPath)
+option = questdlg(['Save .mat file in SMIIL\open-water-platform-data\',site,'\original\deployments?'],'Save File','Y','N','Y');
 
 switch option
     case 'Y'

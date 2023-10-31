@@ -15,7 +15,7 @@ clear all;close all;clc
 
 site = 'north';
 
-cd(['G:\My Drive\Postdoc\SMIIL\open-water-platform-data\raw-data\',site])
+cd(['G:\My Drive\Postdoc\SMIIL\open-water-platform-data\',site,'\original\deployments'])
 
 % Interactively select files (from same deployment)
 [fileNames,dataPath] = uigetfile('*.csv','MultiSelect','on');
@@ -101,6 +101,7 @@ if depNum == 2
     TDS = array2table(NaN(height(sonde1),1),'VariableNames',"TDS");
     pO2 = array2table(NaN(height(sonde1),1),'VariableNames',"pO2");
     DO_sat = array2table(NaN(height(sonde1),1),'VariableNames',"DO_sat");
+    pH = array2table(NaN(height(sonde1),1),'VariableNames',"pH");
     pH_raw = array2table(NaN(height(sonde1),1),'VariableNames',"pH_raw");
     ORP = array2table(NaN(height(sonde1),1),'VariableNames',"ORP");
     external_voltage = array2table(NaN(height(sonde1),1),'VariableNames',"external_voltage");
@@ -203,11 +204,18 @@ sonde1.Properties.VariableUnits = paramUnits1;
 sonde2.Properties.VariableUnits = paramUnits2;
 
 %===-Save created tables in .mat files=====================================
-option = questdlg(['Save .mat file in SMIIL\open-water-platform-data\raw-data\',site,'?'],'Save File','Y','N','Y');
+option = questdlg(['Save .mat file in SMIIL\open-water-platform-data\',site,'\original\deployments?'],'Save File','Y','N','Y');
 
 switch option
     case 'Y'
-        cd(dataPath)
+        saveFileName = extractBefore(fileName1,'-bc');
+        save([saveFileName,'.mat'],"sonde1","sonde2")
+        disp('File saved!')
+    case 'N'
+        disp('File not saved.')
+end
+switch option
+    case 'Y'
         saveFileName = extractBefore(fileName1,'-bc');
         save([saveFileName,'.mat'],"sonde1","sonde2")
         disp('File saved!')
