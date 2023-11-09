@@ -69,14 +69,14 @@ Legend = {'BC','ERDC'};
 XLabel = 'Month/Year';
 red = [0.8500 0.3250 0.0980];   % BC sonde
 blue = [0 0.4470 0.7410];       % ERDC sonde
-FontSize = 12;
+FontSize = 14;
 LineWidth = 1;
 
 fig1 = figure(1);
 fig1.WindowState = 'maximized';
-plot(sonde1_all.datetime_utc,sonde1_all.depth,'Color',red)
+plot(sonde1_all.datetime_utc,sonde1_all.depth,'.','Color',red)
 hold on
-plot(sonde2_all.datetime_utc,sonde2_all.depth,'Color',blue)
+plot(sonde2_all.datetime_utc,sonde2_all.depth,'.','Color',blue)
 hold off
 ax1 = gcf().CurrentAxes;
 ylabel('Depth (m)')
@@ -90,9 +90,9 @@ title(depSite)
 
 fig2 = figure(2);
 fig2.WindowState = 'maximized';
-plot(sonde1_all.datetime_utc,sonde1_all.p,'Color',red)
+plot(sonde1_all.datetime_utc,sonde1_all.p,'.','Color',red)
 hold on
-plot(sonde2_all.datetime_utc,sonde2_all.p,'Color',blue)
+plot(sonde2_all.datetime_utc,sonde2_all.p,'.','Color',blue)
 hold off
 ylabel('Pressure (psi)')
 xlim([dt1 dt2])    
@@ -106,9 +106,9 @@ title(depSite)
 
 fig3 = figure(3);
 fig3.WindowState = 'maximized';
-plot(sonde1_all.datetime_utc,sonde1_all.salinity,'Color',red)
+plot(sonde1_all.datetime_utc,sonde1_all.salinity,'.','Color',red)
 hold on
-plot(sonde2_all.datetime_utc,sonde2_all.salinity,'Color',blue)
+plot(sonde2_all.datetime_utc,sonde2_all.salinity,'.','Color',blue)
 hold off
 ylabel('Salinity (PSU)')
 xlim([dt1 dt2])           
@@ -121,9 +121,9 @@ title(depSite)
 
 fig4 = figure(4);
 fig4.WindowState = 'maximized';
-plot(sonde1_all.datetime_utc,sonde1_all.temperature,'Color',red)
+plot(sonde1_all.datetime_utc,sonde1_all.temperature,'.','Color',red)
 hold on
-plot(sonde2_all.datetime_utc,sonde2_all.temperature,'Color',blue)
+plot(sonde2_all.datetime_utc,sonde2_all.temperature,'.','Color',blue)
 hold off
 ylabel('Temperature (^oC)')
 xlim([dt1 dt2])           
@@ -136,7 +136,7 @@ title(depSite)
 
 fig5 = figure(5);
 fig5.WindowState = 'maximized';
-plot(sonde2_all.datetime_utc,sonde2_all.turbidity,'Color',blue)
+plot(sonde2_all.datetime_utc,sonde2_all.turbidity,'.','Color',blue)
 ylabel('Turbidity (NTU)')
 xlim([dt1 dt2])           
 ylim([0 8500])
@@ -148,9 +148,9 @@ title(depSite)
 
 fig6 = figure(6);
 fig6.WindowState = 'maximized';
-plot(sonde1_all.datetime_utc,sonde1_all.pH,'Color',red)
+plot(sonde1_all.datetime_utc,sonde1_all.pH,'.','Color',red)
 hold on
-plot(sonde2_all.datetime_utc,sonde2_all.pH,'Color',blue)
+plot(sonde2_all.datetime_utc,sonde2_all.pH,'.','Color',blue)
 hold off
 ylabel('pH')
 xlim([dt1 dt2])           
@@ -163,9 +163,9 @@ title(depSite)
 
 fig7 = figure(7);
 fig7.WindowState = 'maximized';
-plot(sonde1_all.datetime_utc,sonde1_all.DO_conc,'Color',red)
+plot(sonde1_all.datetime_utc,sonde1_all.DO_conc,'.','Color',red)
 hold on
-plot(sonde2_all.datetime_utc,sonde2_all.DO_conc,'Color',blue)
+plot(sonde2_all.datetime_utc,sonde2_all.DO_conc,'.','Color',blue)
 hold off
 ylabel('DO concentration (\mumol/L)')
 xlim([dt1 dt2])           
@@ -178,9 +178,9 @@ title(depSite)
 
 fig8 = figure(8);
 fig8.WindowState = 'maximized';
-plot(sonde1_all.datetime_utc,sonde1_all.ORP,'Color',red)
+plot(sonde1_all.datetime_utc,sonde1_all.ORP,'.','Color',red)
 hold on
-plot(sonde2_all.datetime_utc,sonde2_all.ORP,'Color',blue)
+plot(sonde2_all.datetime_utc,sonde2_all.ORP,'.','Color',blue)
 hold off
 ylabel('ORP (mV)')
 xlim([dt1 dt2])           
@@ -193,7 +193,7 @@ title(depSite)
 
 fig9 = figure(9);
 fig9.WindowState = 'maximized';
-plot(sonde1_all.datetime_utc,sonde1_all.chla,'Color',red)
+plot(sonde1_all.datetime_utc,sonde1_all.chla,'.','Color',red)
 ylabel('Chl a (RFU)')
 xlim([dt1 dt2])           
 ylim([0 250])
@@ -226,7 +226,7 @@ switch option
         end
         disp('File saved!')
     case 'N'
-        disp('File not saved.')
+        disp('File not saved!')
 end
 
 %===Option to save plots===================================================

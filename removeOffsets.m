@@ -26,17 +26,18 @@ load(['alldeps-',site,'.mat'])
 means1 = grpstats(sonde1_all,"deployment",{"mean"});
 means2 = grpstats(sonde2_all,"deployment",{"mean"});
 
-% For each sonde, find the mean depth across all deployments that aren't erroneously high
+% For each sonde, find the mean depth across all deployments that aren't
+% erroneously high, excluding zero values.
 switch site
     case 'gull'
-        alldepths1_avg = mean(means1.mean_depth([1 2 3:8 10 11 13])); % BC: Dep# 1, 2, 5-10, 12, 13, 15
-        alldepths2_avg = mean(means2.mean_depth([1:6 8:10 13])); % ERDC: Dep# 1, 2, 5-8, 10-12, 15
+        alldepths1_avg = mean(nonzeros(means1.mean_depth([1 2 3:8 10 11 13]))); % BC: Dep# 1, 2, 5-10, 12, 13, 15
+        alldepths2_avg = mean(nonzeros(means2.mean_depth([1:6 8:10 13]))); % ERDC: Dep# 1, 2, 5-8, 10-12, 15
     case 'north'
-        alldepths1_avg = mean(means1.mean_depth([1:6 8 10 11])); % BC: Dep# 2, 6-10, 12, 14, 15
-        alldepths2_avg = mean(means2.mean_depth([1:4 7 8 10 11])); % ERDC: Dep# 2, 6-8, 11, 12, 14, 15
+        alldepths1_avg = mean(nonzeros(means1.mean_depth([1:6 8 10 11]))); % BC: Dep# 2, 6-10, 12, 14, 15
+        alldepths2_avg = mean(nonzeros(means2.mean_depth([1:4 7 8 10 11]))); % ERDC: Dep# 2, 6-8, 11, 12, 14, 15
     case 'south'
-        alldepths1_avg = mean(means1.mean_depth([1:7 9:11])); % BC: Dep# 1, 2, 4-8, 10-12
-        alldepths2_avg = mean(means2.mean_depth([1:6 9 10 12])); % ERDC: Dep# 1, 2, 5, 7-9, 12, 13, 15
+        alldepths1_avg = mean(nonzeros(means1.mean_depth([1:7 9:11]))); % BC: Dep# 1, 2, 4-8, 10-12
+        alldepths2_avg = mean(nonzeros(means2.mean_depth([1:6 9 10 12]))); % ERDC: Dep# 1, 2, 5, 7-9, 12, 13, 15
 end
 
 %===Read in sonde data for a specific deployment===========================
@@ -96,11 +97,9 @@ disp('Press enter to remove depth offset')
 pause
 
 %===Remove depth offset============================================
-depth1_avg = mean(sonde1.depth,"omitnan");
-depth2_avg = mean(sonde2.depth,"omitnan");
-% delta_depth1 = abs(depth1_avg - alldepths1_avg);
+depth1_avg = mean(nonzeros(sonde1.depth),"omitnan");
+depth2_avg = mean(nonzeros(sonde2.depth),"omitnan");
 delta_depth1 = depth1_avg - alldepths1_avg;
-% delta_depth2 = abs(depth2_avg - alldepths2_avg);
 delta_depth2 = depth2_avg - alldepths2_avg;
 depth1_adj = sonde1.depth - delta_depth1;
 depth2_adj = sonde2.depth - delta_depth2;
@@ -110,10 +109,16 @@ p1_adj = sonde1.density.*1000*9.81.*depth1_adj/6894.76;
 p2_adj = sonde2.density.*1000*9.81.*depth2_adj/6894.76;
 
 %===Fix time offset(s) from UTC============================================
-% South Deployment 5 has a weird time offset between BC and ERDC sonde.
+% Some deployments have weird time offsets between the BC and ERDC sondes, assessed visually
+% South Deployment 5
+% Gull Deployment 8
 if strcmp(site,'south') && depNum == 5
     t_offset = sonde2.datetime_utc(1) - sonde1.datetime_utc(1);
     sonde2.datetime_utc = sonde2.datetime_utc - t_offset;
+elseif strcmp(site,'gull') && depNum == 8
+    t_offset = abs(sonde2.datetime_utc(1) - sonde1.datetime_utc(1));
+    sonde1.datetime_utc = sonde1.datetime_utc - t_offset;
+% elseif strcmp
 else
     % Do nothing
 end

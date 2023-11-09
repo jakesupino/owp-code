@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% convertRawData_Gull.m
+% convertRawData_gull.m
 % This script reads in the raw .csv data from the Gull open-water platform
 % for one deployment from both sondes (BC and ERDC).
 %

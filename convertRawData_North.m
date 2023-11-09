@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% convertRawData_North.m
+% convertRawData_north.m
 % This script reads in the raw .csv data from the North open-water platform 
 % for one deployment from both sondes (BC and ERDC).
 %
