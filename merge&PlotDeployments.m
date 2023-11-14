@@ -12,7 +12,7 @@
 
 clear all;close all;clc
 
-rootpath = 'G:\My Drive\Postdoc\';
+rootpath = 'G:\My Drive\Postdoc\Work\SMIIL\';
 
 fig = uifigure;
 site = uiconfirm(fig,"Select the platform","Site selection","Options",["gull","north","south"]);
@@ -24,9 +24,9 @@ close(fig)
 
 switch dataset
     case "original"
-        ds = fileDatastore([rootpath,'SMIIL\open-water-platform-data\',site,'\original\deployments'],"ReadFcn",@load,"FileExtensions",".mat");
+        ds = fileDatastore([rootpath,'open-water-platform-data\',site,'\original\deployments'],"ReadFcn",@load,"FileExtensions",".mat");
     case "adjusted"
-        ds = fileDatastore([rootpath,'SMIIL\open-water-platform-data\',site,'\adjusted\deployments'],"ReadFcn",@load,"FileExtensions",".mat");
+        ds = fileDatastore([rootpath,'open-water-platform-data\',site,'\adjusted\deployments'],"ReadFcn",@load,"FileExtensions",".mat");
 end
 
 dat = readall(ds);
@@ -232,9 +232,9 @@ end
 %===Option to save plots===================================================
 switch dataset
     case "original"
-        saveFilePath = ['SMIIL\figures\open-water-platform-figures\',site,'\original\merged'];
+        saveFilePath = ['figures\open-water-platform-figures\',site,'\original\merged'];
     case "adjusted"
-        saveFilePath = ['SMIIL\figures\open-water-platform-figures\',site,'\adjusted\merged'];
+        saveFilePath = ['figures\open-water-platform-figures\',site,'\adjusted\merged'];
 end
 
 option = questdlg(['Save plots as .png and .fig in ',saveFilePath,'?'],'Save plots','Y','N','Y');

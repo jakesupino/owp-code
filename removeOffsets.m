@@ -13,14 +13,14 @@
 
 clear all;close all;clc
 
-rootpath = 'G:\My Drive\Postdoc\';
+rootpath = 'G:\My Drive\Postdoc\Work\SMIIL\';
 
 fig = uifigure;
 site = uiconfirm(fig,"Select the platform","Site selection","Options",["gull","north","south"]);
 close(fig)
 
 % Load merged data for the platform
-cd([rootpath,'SMIIL\open-water-platform-data\',site,'\original\merged'])
+cd([rootpath,'open-water-platform-data\',site,'\original\merged'])
 load(['alldeps-',site,'.mat'])
 
 means1 = grpstats(sonde1_all,"deployment",{"mean"});
@@ -66,8 +66,6 @@ paramUnits = ["","","","","","m",""];
 usgs.Properties.VariableUnits = paramUnits;
 
 %===Plot raw sonde and USGS data===========================================
-cd(['G:\My Drive\Postdoc\SMIIL\figures\open-water-platform-figures\',site])
-
 red = [0.8500 0.3250 0.0980];   % BC sonde
 blue = [0 0.4470 0.7410];       % ERDC sonde
 FontSize = 12;
@@ -233,9 +231,7 @@ sonde2.depth = depth2_adj;
 sonde2.p = p2_adj;
 
 %====Save created tables in .mat files=====================================
-saveFilePath = ['SMIIL\open-water-platform-data\',site,'\adjusted\deployments'];
-
-cd([rootpath,saveFilePath])
+saveFilePath = ['open-water-platform-data\',site,'\adjusted\deployments'];
 
 option = questdlg(['Save .mat file in ',saveFilePath,'?'],'Save File','Y','N','Y');
 switch option

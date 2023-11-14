@@ -16,8 +16,9 @@ clear all;close all;clc
 
 site = 'gull';
 
-rootpath = 'G:\My Drive\Postdoc\';
-cd([rootpath,'SMIIL\open-water-platform-data\',site,'\adjusted\merged'])
+rootpath = 'G:\My Drive\Postdoc\Work\SMIIL\';
+
+cd([rootpath,'open-water-platform-data\',site,'\adjusted\merged'])
 
 load(['alldeps-',site,'-adj.mat'])
 
@@ -93,7 +94,7 @@ ind_manual_global = unique([ind_manual1;ind_manual2]);
 clearvars oow1 oow2 oow3 oow4 oow5 oow6 oow7 oow8 oow9 oow10 oow11
 
 %% DEPTH
-cd('G:\My Drive\Postdoc\SMIIL\figures\open-water-platform-figures\gull\data-qc\bc')
+cd([rootpath,'\figures\open-water-platform-figures\gull\data-qc\bc'])
 
 depth1_orig = sonde1_all.depth;  % Preserve original depth data for plotting
 

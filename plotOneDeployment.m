@@ -12,7 +12,7 @@
 
 clear all;close all;clc
 
-rootpath = 'G:\My Drive\Postdoc\';
+rootpath = 'G:\My Drive\Postdoc\Work\SMIIL\';
 
 fig = uifigure;
 site = uiconfirm(fig,"Select the platform","Site selection","Options",["gull","north","south"]);
@@ -24,9 +24,9 @@ close(fig)
 
 switch dataset
     case "original"
-        cd(['G:\My Drive\Postdoc\SMIIL\open-water-platform-data\',site,'\original\deployments']);
+        cd([rootpath,'open-water-platform-data\',site,'\original\deployments']);
     case "adjusted"
-        cd(['G:\My Drive\Postdoc\SMIIL\open-water-platform-data\',site,'\adjusted\deployments']);
+        cd([rootpath,'open-water-platform-data\',site,'\adjusted\deployments']);
 end
 
 [fileName,dataPath] = uigetfile('*.mat');
@@ -284,9 +284,9 @@ end
 %===Option to save plots===================================================
 switch dataset
     case "original"
-        saveFilePath = ['SMIIL\figures\open-water-platform-figures\',site,'\original\deployments'];
+        saveFilePath = ['figures\open-water-platform-figures\',site,'\original\deployments'];
     case "adjusted"
-        saveFilePath = ['SMIIL\figures\open-water-platform-figures\',site,'\adjusted\deployments'];
+        saveFilePath = ['figures\open-water-platform-figures\',site,'\adjusted\deployments'];
 end
 
 option = questdlg(['Save plots as .png and .fig in ',saveFilePath,'?'],'Save plots','Y','N','Y');

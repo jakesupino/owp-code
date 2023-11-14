@@ -15,7 +15,9 @@ clear all;close all;clc
 
 site = 'gull';
 
-cd(['G:\My Drive\Postdoc\SMIIL\open-water-platform-data\',site,'\original\deployments'])
+rootpath = 'G:\My Drive\Postdoc\Work\SMIIL\';
+
+cd([rootpath,'open-water-platform-data\',site,'\original\deployments'])
 
 % Interactively select files (from same deployment)
 [fileNames,dataPath] = uigetfile('*.csv','MultiSelect','on');

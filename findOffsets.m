@@ -16,7 +16,9 @@ clear all;close all;clc
 
 site = 'gull'; % CHANGE THIS
 
-ds = fileDatastore(['G:\My Drive\Postdoc\SMIIL\raw-data\open-water-platform-data\',site],"ReadFcn",@load,"FileExtensions",'.mat');
+rootpath = 'G:\My Drive\Postdoc\Work\SMIIL\';
+
+ds = fileDatastore([rootpath,'open-water-platform-data\',site,'\original\deployments'],"ReadFcn",@load,"FileExtensions",'.mat');
 
 dat = readall(ds);
 
@@ -37,8 +39,6 @@ paramUnits = ["","","","","","m",""];
 usgs.Properties.VariableUnits = paramUnits;
 
 %===Plot sonde and USGS data===============================================
-cd(['G:\My Drive\Postdoc\SMIIL\figures\open-water-platform-figures\',site])
-
 red = [0.8500 0.3250 0.0980];   % BC sonde
 blue = [0 0.4470 0.7410];       % ERDC sonde
 FontSize = 12;
@@ -71,7 +71,7 @@ for i = 1:length(dat)
     title(['Deployment ',num2str(dat{i}.sonde1.deployment(1))])
     set(gca,'FontSize',FontSize,'LineWidth',LineWidth)
     grid on
-    saveas(fig1,['dep',num2str(dat{i}.sonde1.deployment(1)),'-depth.fig'])
-    saveas(fig1,['dep',num2str(dat{i}.sonde1.deployment(1)),'-depth.png'])
+    % saveas(fig1,['dep',num2str(dat{i}.sonde1.deployment(1)),'-depth.fig'])
+    % saveas(fig1,['dep',num2str(dat{i}.sonde1.deployment(1)),'-depth.png'])
     pause
 end

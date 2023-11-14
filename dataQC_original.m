@@ -12,13 +12,13 @@
 
 clear all; close all;clc
 
-rootpath = 'G:\My Drive\Postdoc\';
+rootpath = 'G:\My Drive\Postdoc\Work\SMIIL\';
 
 fig = uifigure;
 site = uiconfirm(fig,"Select the platform","Site selection","Options",["gull","north","south"]);
 close(fig)
 
-cd([rootpath,'SMIIL\open-water-platform-data\',site,'\adjusted\merged'])
+cd([rootpath,'open-water-platform-data\',site,'\adjusted\merged'])
 
 load(['alldeps-',site,'-adj.mat'])
 
