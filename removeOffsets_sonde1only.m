@@ -106,7 +106,7 @@ smoothed0 = smoothdata(usgs.tidal_elev);
 % Find peaks in sonde data; smooth first to remove local peaks
 smoothed1 = smoothdata(sonde1.depth);
 % Change this value depending on sampling interval (6, 10, or 12 min)
-minPkDist = 55   % 12 min
+minPkDist = 55;   % 12 min
 % minPkDist = 65;    % 10 min
 % minPkDist = 115;   % 6 min
 [pks1,locs1] = findpeaks(smoothed1,'MinPeakDistance',minPkDist);
@@ -119,7 +119,7 @@ minPkDist = 55   % 12 min
 % legend('Original','Smoothed')
 
 % Plot peaks in data to double-check
-fig2= figure(2);
+fig2=figure(2);
 fig2.WindowState = 'maximized';
 h0 = plot(usgs.datetime_utc,usgs.tidal_elev,'k');
 hold on

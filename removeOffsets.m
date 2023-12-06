@@ -41,7 +41,7 @@ switch site
 end
 
 %===Read in sonde data for a specific deployment===========================
-cd([rootpath,'SMIIL\open-water-platform-data\',site,'\original\deployments'])
+cd([rootpath,'open-water-platform-data\',site,'\original\deployments'])
 
 [fileName,dataPath] = uigetfile('*.mat');
 
@@ -51,7 +51,7 @@ depNum = sonde1.deployment(1);
 
 %===Read in USGS data======================================================
 paramNames = ["agency","site_no","datetime_local","timezone","tidal_elev","qual-code"];
-usgs = readtable('G:\My Drive\Postdoc\SMIIL\usgs-data\tidal-elev.txt','TextType','string');
+usgs = readtable([rootpath,'usgs-data\tidal-elev.txt'],'TextType','string');
 usgs.Properties.VariableNames = paramNames;
 
 usgs.datetime_local.TimeZone = 'America/New_York';
@@ -199,13 +199,38 @@ datetime_utc2_adj = sonde2.datetime_utc + delta_t2;
 datetime_local1_adj = sonde1.datetime_local + delta_t1;
 datetime_local2_adj = sonde2.datetime_local + delta_t2;
 
+%% Adjust for Daylight Saving Time
+dt1 = diff(datetime_utc1_adj);
+dst_end1 = find(dt1 > hours(1));
+dst_start1 = find(dt1 < 0);
+dt2 = diff(datetime_utc2_adj);
+dst_end2 = find(dt2 > hours(1));
+dst_start2 = find(dt2 < 0);
+
+if ~isempty(dst_end1)
+    % For times after DST ends, shift backwards by 1 hour
+    datetime_utc1_adj(dst_end1+1:end) = datetime_utc1_adj(dst_end1+1:end) - hours(1);
+elseif ~isempty(dst_start1)
+    % For times after DST starts, shift forwards by 1 hour
+    datetime_utc1_adj(dst_start1+1:end) = datetime_utc1_adj(dst_start1+1:end) + hours(1);
+end
+
+if ~isempty(dst_end2)
+    % For times after DST ends, shift backwards by 1 hour
+    datetime_utc2_adj(dst_end2+1:end) = datetime_utc2_adj(dst_end2+1:end) - hours(1);
+elseif ~isempty(dst_start2)
+    % For times after DST starts, shift forwards by 1 hour
+    datetime_utc2_adj(dst_start2+1:end) = datetime_utc2_adj(dst_start2+1:end) + hours(1);
+end
+
+%%
 %===Plot adjusted data=============================================
-fig3 = figure(3);
+fig3 = figure(4);
 fig3.WindowState = 'maximized';
-h3 = plot(usgs.datetime_utc,usgs.tidal_elev,'k');
+h3 = plot(usgs.datetime_utc,usgs.tidal_elev,'.k');
 hold on
-h1 = plot(datetime_utc1_adj,depth1_adj,'Color',red);
-h2 = plot(datetime_utc2_adj,depth2_adj,'Color',blue);
+h1 = plot(datetime_utc1_adj,depth1_adj,'.','Color',red);
+h2 = plot(datetime_utc2_adj,depth2_adj,'.','Color',blue);
 hold off
 legend([h1 h2 h3],'BC','ERDC','USGS')
 xlim([min(datetime_utc1_adj) max(datetime_utc1_adj)])

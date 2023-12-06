@@ -24,7 +24,7 @@ dat = readall(ds);
 
 %===Read in USGS data======================================================
 paramNames = ["agency","site_no","datetime_local","timezone","tidal_elev","qual-code"];
-usgs = readtable('G:\My Drive\Postdoc\SMIIL\raw-data\usgs-data\tidal-elev.txt','TextType','string');
+usgs = readtable('G:\My Drive\Postdoc\Work\SMIIL\usgs-data\tidal-elev.txt','TextType','string');
 usgs.Properties.VariableNames = paramNames;
 
 usgs.datetime_local.TimeZone = 'America/New_York';

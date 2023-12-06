@@ -68,7 +68,7 @@ red = [0.8500 0.3250 0.0980];   % BC sonde
 blue = [0 0.4470 0.7410];       % ERDC sonde
 FontSize = 14;
 LineWidth = 1;
-
+%%
 switch site
     case 'gull'
         label = {'Deployment 1','Deployment 2','Deployment 5','Deployment 6',...
@@ -81,37 +81,18 @@ switch site
             'Deployment 13','Deployment 14','Deployment 15'};
     case 'south'
         % BC
-        label1 = {'Deployment 1','Deployment 2','Deployment 4','Deployment 5',...
+        label = {'Deployment 1','Deployment 2','Deployment 4','Deployment 5',...
             'Deployment 6','Deployment 7','Deployment 8','Deployment 9',...
             'Deployment 10','Deployment 11','Deployment 12','Deployment 13',...
             'Deployment 14'};
         % ERDC
-        label2 = {'Deployment 1','Deployment 2','Deployment 5','Deployment 7',...
+        label = {'Deployment 1','Deployment 2','Deployment 5','Deployment 7',...
             'Deployment 8','Deployment 9','Deployment 10','Deployment 11',...
             'Deployment 12','Deployment 13','Deployment 14','Deployment 15'};
 end
 
 % Find indices of deployment changes
-switch site
-    case 'gull'
-        ind_dep = find(diff(sonde1_all.deployment) > 0);
-        label = {'Deployment 1','Deployment 2','Deployment 5','Deployment 6',...
-            'Deployment 7','Deployment 8','Deployment 9','Deployment 10',...
-            'Deployment 11','Deployment 12','Deployment 13','Deployment 14',...
-            'Deployment 15'};
-    case 'north'
-        ind_dep = find(diff(sonde1_all.deployment) > 0);
-        label = {'Deployment 2','Deployment 6','Deployment 7','Deployment 8',...
-            'Deployment 9','Deployment 10','Deployment 11','Deployment 12',...
-            'Deployment 13','Deployment 14','Deployment 15'};
-    case 'south'
-        ind_dep1 = find(diff(sonde1_all.deployment) > 0);
-        ind_dep = [ind_dep1;length(sonde1_all.datetime_utc)-1];   % Need to add last index bc BC sonde didn't have a Dep 15
-        label = {'Deployment 1','Deployment 2','Deployment 4','Deployment 5',...
-            'Deployment 6','Deployment 7','Deployment 8','Deployment 9',...
-            'Deployment 10','Deployment 11','Deployment 12','Deployment 13',...
-            'Deployment 14','Deployment 15'};
-end
+ind_dep = find(diff(sonde1_all.deployment) > 0);
 
 fig1 = figure(1);
 fig1.WindowState = 'maximized';
@@ -251,7 +232,7 @@ title(depSite)
 % set([ax1 ax2 ax3 ax4 ax5 ax6 ax7 ax8 ax9],'FontSize',FontSize,'LineWidth',LineWidth,'XTick',XTick)
 set([ax1 ax2 ax3 ax4 ax5 ax6 ax7 ax8 ax9],'FontSize',FontSize,'LineWidth',LineWidth)
 
-
+%%
 %====Save created tables in .mat files=====================================
 switch dataset
     case "original"
