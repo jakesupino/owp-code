@@ -223,7 +223,7 @@ elseif ~isempty(dst_start2)
     datetime_utc2_adj(dst_start2+1:end) = datetime_utc2_adj(dst_start2+1:end) + hours(1);
 end
 
-%%
+
 %===Plot adjusted data=============================================
 fig3 = figure(4);
 fig3.WindowState = 'maximized';
