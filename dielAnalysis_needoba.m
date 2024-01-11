@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % dielAnalysis.m
-% This script uses the diel oxygen method to calculate GPP, ER, and NEM
+% This script_needoba uses the diel oxygen method to calculate GPP, ER, and NEM
 % using example dataset for Columbia River Estuary from Needoba et al. (2012).
 %
 % AUTHOR:

@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% dielAnalysis.m
+% dielAnalysis_beck.m
 % This script uses the diel oxygen method to calculate GPP, ER, and NEM
 % following Beck et al. (2015) and using their dataset, available at https://github.com/fawda123/WtRegDO
 %
@@ -18,7 +18,8 @@ rootpath = 'G:\My Drive\Postdoc\Work\SMIIL\';
 % Data from Beck et al. (2015) on GitHub
 varNames = ["date","T","S","DO_conc","ATemp","BP","windspeed","tide"];
 varUnits = ["","degC","psu","g m-3","degC","mbar","m s-1","m"];
-dat = readtable('G:\My Drive\Postdoc\Work\SMIIL\diel-method\example-data\beck-data.csv');
+% dat = readtable('G:\My Drive\Postdoc\Work\SMIIL\diel-method\example-data\beck-data.csv');
+dat = readtable('G:\My Drive\Postdoc\Work\SMIIL\diel-method\example-data\sonde1_all-gull.csv');
 dat = rmmissing(dat);   % Remove any rows that contain missing data
 dat.Properties.VariableNames = varNames;
 dat.Properties.VariableUnits = varUnits;
@@ -38,17 +39,27 @@ DO_per_sat = dat.DO_conc./DO_sat*100;   % [%]
 %====Calculate gas exchange at air-water interface=======================
 % Caffrey/Beck (uses "reaeration coefficient", ka)
 
-% NOTE: Both D and Kw change with S and T; using constant values for now; see
-% https://unisense.com/wp-content/uploads/2021/10/Seawater-Gases-table.pdf
 H = 1.593;   % Mean water depth [m]
-Dw = 2E-9;   % Oxygen diffusivity [m2 s-1]
-Vw = 1.5E-6; % Kinematic viscosity of seawater [m2 s-1]
 rho_a = 1.293;  % Density of air [kg m-3]
 T = dat.T;
 S = dat.S;
 u = dat.windspeed;
 
-ka = 1/H * 0.1706 * (Dw/Vw)^0.5 * (rho_a./rho_sw).^0.5 .* u.^1.81; % Reaeration coefficient [h-1]
+% Using constant Dw and Vw as placeholders; see
+% https://unisense.com/wp-content/uploads/2021/10/Seawater-Gases-table.pdf
+% Dw = 2E-9;   % Oxygen diffusivity [m2 s-1]
+% Vw = 1.5E-6; % Kinematic viscosity [m2 s-1]
+% ka = 1/H * 0.1706 * (Dw/Vw)^0.5 * (rho_a./rho_sw).^0.5 .* u.^1.81; % Reaeration coefficient [h-1]
+
+% Calculate Vw
+for i = 1:length(T)
+    Uw(i,1) = swp('m',S(i),T(i));  % Dynamic viscosity [kg m-1 s-1]
+end
+Vw = Uw./rho_sw; % Kinematic viscosity [m2 s-1]
+kB = 1.3806503E-23; % Boltzmann's constant [m2 kg s-2 K-1]
+R0 = 1.72E-10;      % Radius of O2 molecule [m]
+Tk = T + 273.15;    % [K]
+ka = 1/H * 0.1706 .* (kB*Tk./(4*rho_sw.*Vw.^2.*R0)).^0.5 .* (rho_a./rho_sw).^0.5 .* u.^1.81;
 
 % Convert DO concentration from [g m-3] to [mmol m-3]
 DO_conc = dat.DO_conc./31.998;  % [mmol m-3]
@@ -92,23 +103,24 @@ for i = 1:length(daylength)
     % During night hours, P = 0
     R_hourly(i,1) = mean(dCdt(dayend(i):daystart(i+1)) - D(dayend(i):daystart(i+1)),'omitnan'); % Hourly rate of respiration; [mmol m-3 h-1]
     % During day hours, P != 0
-    P_hourly(i,1) = mean(dCdt(daystart(i):dayend(i)) - D(daystart(i):dayend(i)),'omitnan');    % Hourly rate of apparent primary production; [mmol m-3 h-1]
+    P_hourly(i,1) = mean(dCdt(daystart(i):dayend(i)) - D(daystart(i):dayend(i)),'omitnan');     % Hourly rate of net production; [mmol m-3 h-1]
 end
 
 % Daily rates
-R_daily = R_hourly .* 24;     % Daily rate of respiration; [mmol m-3 d-1]
-P_daily = (P_hourly - R_hourly) .* daylength;  % Daily rate of production; [mmol m-3 d-1]
+R_daily = R_hourly .* 24;                      % Daily rate of respiration; [mmol m-3 d-1]
+P_daily = (P_hourly - R_hourly) .* daylength;  % Daily rate of gross production; [mmol m-3 d-1]
 
 % Convert volumetric rates to depth-integrated (aereal) estimates
 GPP = P_daily * H;      % [mmol O2 m-2 d-1]
-ER = R_daily * H;     % [mmol O2 m-2 d-1]
+ER = R_daily * H;       % [mmol O2 m-2 d-1]
 NEM = GPP + ER;         % [mmol O2 m-2 d-1]
-
+%%
 % Plot results
 figure(1),clf
-plot(dat.date(daystart(2:end)),GPP,'.-')
+plot(dat.date(daystart(2:end)),GPP,'.-','MarkerSize',12,'LineWidth',2)
 hold on
-plot(dat.date(daystart(2:end)),ER,'k.-')
-plot(dat.date(daystart(2:end)),NEM,'r.-')
-ylabel('mmol O_2 m^{-2} d^{-1}')
-legend('GPP','ER','NEM')
+plot(dat.date(daystart(2:end)),ER,'k.-','MarkerSize',12,'LineWidth',2)
+plot(dat.date(daystart(2:end)),NEM,'r.-','MarkerSize',12,'LineWidth',2)
+ylabel('mmol O_2 m^{-2} d^{-1}','FontSize',14)
+legend({'GPP','ER','NEM'},'FontSize',14)
+set(gca,'FontSize',14,'LineWidth',2)

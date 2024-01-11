@@ -116,7 +116,6 @@ spike_threshold = 0.1;    % FAIL threshold (m)
 
 d_depth = zeros(length(sonde1_all.depth),1);
 
-
 for i = 2:length(sonde1_all.depth)-1
     % Only check points if both they and their neighbors have not already been flagged for manual removal
     if ~ismember(i,ind_manual) && ~ismember(i+1,ind_manual) && ~ismember(i-1,ind_manual)
@@ -168,35 +167,16 @@ flags1.depth(ind_fail) = 4;
 % Create structure to save flagged depth indices
 depths_flagged = struct('ind_manual',ind_manual_global,'ind_grossRange',ind_grossRange,'ind_spike',ind_spike,'ind_oow',ind_oow,'d_high',d_high,'d_low',d_low,'spike_threshold',spike_threshold);
 
-%====Convert table to timetable============================================
-sonde1_TT = table2timetable(sonde1_all,'RowTimes','datetime_utc');
-newTimeStep = minutes(10);
-sonde1_TT = retime(sonde1_TT,'regular','mean','TimeStep',newTimeStep); % Calculate mean of values in each time bin
-
-sonde1_TT.datetime_utc = sonde1_TT.datetime_utc + newTimeStep/2;
-sonde1_TT.datetime_local = sonde1_TT.datetime_utc;
-sonde1_TT.datetime_local.TimeZone = 'America/New_York';
-
-%====Plot the cleaned data=================================================
-fig = figure;clf
-fig.WindowState = 'maximized';
-% h0 = plot(sonde1_all.datetime_utc,depth1_orig,'.','Color',red);
-% hold on
-h1 = plot(sonde1_TT.datetime_utc,sonde1_TT.depth,'.k');
-xline([sonde1_all.datetime_utc(1); sonde1_all.datetime_utc(ind_dep+1)],'--',label);
-% hold off
-% legend([h0 h1],'Original','Retimed','location','best')
-ylabel('Depth (m)')
-title('Gull BC Sonde - Cleaned & Retimed Depth Data')
-xlim([dt1 dt2])                 % Use same x limits for comparing sites
-ylim([-.5 3])
-set(gca,'FontSize',FontSize)
-
 clearvars ind_high ind_low ind_grossRange ind_spike C ig is
 
 % Check that there aren't redundant points flagged in the Depth QC tests
 % depths_flagged_all = unique([depths_flagged.ind_grossRange;depths_flagged.ind_manual;depths_flagged.ind_oow;depths_flagged.ind_spike]);
 % depths_flagged_all0 = [depths_flagged.ind_grossRange;depths_flagged.ind_manual;depths_flagged.ind_oow;depths_flagged.ind_spike];
+
+%===Clean pressure data based on cleaned depth data========================
+% p1_adj = sonde1.density.*1000*9.81.*depth1_adj/6894.76;
+sonde1_all.p = mean(sonde1_all.density,'omitmissing').*1000*9.81.*sonde1_all.depth/6894.76;
+flags1.p(ind_fail) = 4;
 
 %% TEMPERATURE
 T1_orig = sonde1_all.temperature;  % Preserve original T data for plotting
@@ -283,30 +263,6 @@ flags1.temperature(ind_fail) = 4;
 % Create structure to save flagged temperature indices
 T_flagged = struct('ind_manual',ind_manual_global,'ind_grossRange',ind_grossRange,'ind_spike',ind_spike,'ind_oow',ind_oow,'d_high',d_high,'d_low',d_low,'spike_threshold',spike_threshold);
 
-%====Convert table to timetable============================================
-% Recalculate with cleaned temperature data
-sonde1_TT = table2timetable(sonde1_all,'RowTimes','datetime_utc');
-newTimeStep = minutes(10);
-sonde1_TT = retime(sonde1_TT,'regular','mean','TimeStep',newTimeStep); % Calculate mean of values in each time bin
-
-sonde1_TT.datetime_utc = sonde1_TT.datetime_utc + newTimeStep/2;
-sonde1_TT.datetime_local = sonde1_TT.datetime_utc;
-sonde1_TT.datetime_local.TimeZone = 'America/New_York';
-
-%====Plot the cleaned data=================================================
-fig = figure;clf
-fig.WindowState = 'maximized';
-% h0 = plot(sonde1_all.datetime_utc,T1_orig,'.','Color',red);
-% hold on
-h1 = plot(sonde1_TT.datetime_utc,sonde1_TT.temperature,'.k');
-xline([sonde1_all.datetime_utc(1); sonde1_all.datetime_utc(ind_dep+1)],'--',label);
-% hold off
-% legend([h0 h1],'Original','Retimed','location','best')
-ylabel('Temperature (^oC)')
-title('Gull BC Sonde - Cleaned & Retimed Temperature Data')
-xlim([dt1 dt2])                 % Use same x limits for comparing sites
-set(gca,'FontSize',FontSize)
-
 clearvars ind_high ind_low ind_grossRange ind_spike C ig is
 
 %% DO
@@ -380,33 +336,9 @@ flags1.DO_conc(ind_fail) = 4;
 % Create structure to save flagged DO concentration indices
 DOconc_flagged = struct('ind_manual',ind_manual_global,'ind_grossRange',ind_grossRange,'ind_spike',ind_spike,'ind_oow',ind_oow,'d_high',d_high,'d_low',d_low,'spike_threshold',spike_threshold);
 
-%====Convert table to timetable============================================
-% Recalculate with cleaned DO concentration data
-sonde1_TT = table2timetable(sonde1_all,'RowTimes','datetime_utc');
-newTimeStep = minutes(10);
-sonde1_TT = retime(sonde1_TT,'regular','mean','TimeStep',newTimeStep); % Calculate mean of values in each time bin
-
-sonde1_TT.datetime_utc = sonde1_TT.datetime_utc + newTimeStep/2;
-sonde1_TT.datetime_local = sonde1_TT.datetime_utc;
-sonde1_TT.datetime_local.TimeZone = 'America/New_York';
-
-%====Plot the cleaned data=================================================
-fig = figure;clf
-fig.WindowState = 'maximized';
-% h0 = plot(sonde1_all.datetime_utc,DOconc1_orig,'.','Color',red);
-% hold on
-h1 = plot(sonde1_TT.datetime_utc,sonde1_TT.DO_conc,'.k');
-xline([sonde1_all.datetime_utc(1); sonde1_all.datetime_utc(ind_dep+1)],'--',label);
-% hold off
-% legend([h0 h1],'Original','Retimed','location','best')
-ylabel('DO Concentration (\mumol/L)')
-title('Gull BC Sonde - Cleaned & Retimed DO Concentration Data')
-xlim([dt1 dt2])                 % Use same x limits for comparing sites
-set(gca,'FontSize',FontSize)
-
 clearvars ind_high ind_low ind_grossRange ind_spike C ig is
 
-%% STOPPED HERE
+%%
 % SALINITY
 cd([rootpath,'\figures\open-water-platform-figures\gull\data-qc\bc'])
 
@@ -475,13 +407,15 @@ sonde1_all.salinity(ind_grossRange) = NaN;
 sonde1_all.salinity(ind_spike) = NaN;
 sonde1_all.salinity(ind_oow) = NaN;
 
-% Flag all NaNs as FAIL
-ind_fail = find(isnan(sonde1_all.salinity));
+% Flag all NaNs as FAILind_fail = find(isnan(sonde1_all.salinity));
 flags1.salinity(ind_fail) = 4;
 
 % Create structure to save flagged salinity indices
 S_flagged = struct('ind_manual',ind_manual_global,'ind_grossRange',ind_grossRange,'ind_spike',ind_spike,'ind_oow',ind_oow,'S_high',S_high,'S_low',S_low,'spike_threshold',spike_threshold);
 
+clearvars ind_high ind_low ind_grossRange ind_spike C ig is
+
+%%
 %====Convert table to timetable============================================
 sonde1_TT = table2timetable(sonde1_all,'RowTimes','datetime_utc');
 newTimeStep = minutes(10);
@@ -492,6 +426,50 @@ sonde1_TT.datetime_local = sonde1_TT.datetime_utc;
 sonde1_TT.datetime_local.TimeZone = 'America/New_York';
 
 %====Plot the cleaned data=================================================
+% Depth
+fig = figure;clf
+fig.WindowState = 'maximized';
+% h0 = plot(sonde1_all.datetime_utc,depth1_orig,'.','Color',red);
+% hold on
+h1 = plot(sonde1_TT.datetime_utc,sonde1_TT.depth,'.k');
+xline([sonde1_all.datetime_utc(1); sonde1_all.datetime_utc(ind_dep+1)],'--',label);
+% hold off
+% legend([h0 h1],'Original','Retimed','location','best')
+ylabel('Depth (m)')
+title('Gull BC Sonde - Cleaned & Retimed Depth Data')
+xlim([dt1 dt2])                 % Use same x limits for comparing sites
+ylim([-.5 3])
+set(gca,'FontSize',FontSize)
+
+% Temperature
+fig = figure;clf
+fig.WindowState = 'maximized';
+% h0 = plot(sonde1_all.datetime_utc,T1_orig,'.','Color',red);
+% hold on
+h1 = plot(sonde1_TT.datetime_utc,sonde1_TT.temperature,'.k');
+xline([sonde1_all.datetime_utc(1); sonde1_all.datetime_utc(ind_dep+1)],'--',label);
+% hold off
+% legend([h0 h1],'Original','Retimed','location','best')
+ylabel('Temperature (^oC)')
+title('Gull BC Sonde - Cleaned & Retimed Temperature Data')
+xlim([dt1 dt2])                 % Use same x limits for comparing sites
+set(gca,'FontSize',FontSize)
+
+% DO
+fig = figure;clf
+fig.WindowState = 'maximized';
+% h0 = plot(sonde1_all.datetime_utc,DOconc1_orig,'.','Color',red);
+% hold on
+h1 = plot(sonde1_TT.datetime_utc,sonde1_TT.DO_conc,'.k');
+xline([sonde1_all.datetime_utc(1); sonde1_all.datetime_utc(ind_dep+1)],'--',label);
+% hold off
+% legend([h0 h1],'Original','Retimed','location','best')
+ylabel('DO Concentration (\mumol/L)')
+title('Gull BC Sonde - Cleaned & Retimed DO Concentration Data')
+xlim([dt1 dt2])                 % Use same x limits for comparing sites
+set(gca,'FontSize',FontSize)
+
+% Salinity
 fig = figure;clf
 fig.WindowState = 'maximized';
 % h0 = plot(sonde1_all.datetime_utc,depth1_orig,'.','Color',red);
@@ -506,4 +484,7 @@ xlim([dt1 dt2])                 % Use same x limits for comparing sites
 ylim([-.5 50])
 set(gca,'FontSize',FontSize)
 
-% clearvars ind_high ind_low ind_grossRange ind_spike C ig is
+%%
+sonde1_cleaned = sonde1_TT;
+cd([rootpath,'open-water-platform-data\gull\cleaned'])
+save('gull-cleaned.mat','sonde1_cleaned','flags1')

@@ -92,7 +92,7 @@ clearvars oow1 oow2 oow3 oow4 oow5 oow6 oow7 oow8 oow9 oow10 oow110
 
 cd([rootpath,'\figures\open-water-platform-figures\gull\data-qc\bc'])
 
-% DEPTH
+%% DEPTH
 depth1_orig = sonde1_all.depth;  % Preserve original depth data for plotting
 
 %====(1) Gross Range Test==================================================
@@ -115,7 +115,6 @@ ind_manual = [ind_manual_global;ind_oow];
 spike_threshold = 0.1;    % FAIL threshold (m)
 
 d_depth = zeros(length(sonde1_all.depth),1);
-
 
 for i = 2:length(sonde1_all.depth)-1
     % Only check points if both they and their neighbors have not already been flagged for manual removal
@@ -168,15 +167,6 @@ flags1.depth(ind_fail) = 4;
 % Create structure to save flagged depth indices
 depths_flagged = struct('ind_manual',ind_manual_global,'ind_grossRange',ind_grossRange,'ind_spike',ind_spike,'ind_oow',ind_oow,'d_high',d_high,'d_low',d_low,'spike_threshold',spike_threshold);
 
-%====Convert table to timetable============================================
-sonde1_TT = table2timetable(sonde1_all,'RowTimes','datetime_utc');
-newTimeStep = minutes(10);
-sonde1_TT = retime(sonde1_TT,'regular','mean','TimeStep',newTimeStep); % Calculate mean of values in each time bin
-
-sonde1_TT.datetime_utc = sonde1_TT.datetime_utc + newTimeStep/2;
-sonde1_TT.datetime_local = sonde1_TT.datetime_utc;
-sonde1_TT.datetime_local.TimeZone = 'America/New_York';
-
 %====Plot the cleaned data=================================================
 fig = figure;clf
 fig.WindowState = 'maximized';
@@ -197,6 +187,11 @@ clearvars ind_high ind_low ind_grossRange ind_spike C ig is
 % Check that there aren't redundant points flagged in the Depth QC tests
 % depths_flagged_all = unique([depths_flagged.ind_grossRange;depths_flagged.ind_manual;depths_flagged.ind_oow;depths_flagged.ind_spike]);
 % depths_flagged_all0 = [depths_flagged.ind_grossRange;depths_flagged.ind_manual;depths_flagged.ind_oow;depths_flagged.ind_spike];
+
+%===Clean pressure data based on cleaned depth data========================
+% p1_adj = sonde1.density.*1000*9.81.*depth1_adj/6894.76;
+sonde1_all.p = mean(sonde1_TT.density,'omitmissing').*1000*9.81.*sonde1_TT.depth/6894.76;
+flags1.p(ind_fail) = 4;
 
 %% TEMPERATURE
 T1_orig = sonde1_all.temperature;  % Preserve original T data for plotting
@@ -282,16 +277,6 @@ flags1.temperature(ind_fail) = 4;
 
 % Create structure to save flagged temperature indices
 T_flagged = struct('ind_manual',ind_manual_global,'ind_grossRange',ind_grossRange,'ind_spike',ind_spike,'ind_oow',ind_oow,'d_high',d_high,'d_low',d_low,'spike_threshold',spike_threshold);
-
-%====Convert table to timetable============================================
-% Recalculate with cleaned temperature data
-sonde1_TT = table2timetable(sonde1_all,'RowTimes','datetime_utc');
-newTimeStep = minutes(10);
-sonde1_TT = retime(sonde1_TT,'regular','mean','TimeStep',newTimeStep); % Calculate mean of values in each time bin
-
-sonde1_TT.datetime_utc = sonde1_TT.datetime_utc + newTimeStep/2;
-sonde1_TT.datetime_local = sonde1_TT.datetime_utc;
-sonde1_TT.datetime_local.TimeZone = 'America/New_York';
 
 %====Plot the cleaned data=================================================
 fig = figure;clf
@@ -380,16 +365,6 @@ flags1.DO_conc(ind_fail) = 4;
 % Create structure to save flagged DO concentration indices
 DOconc_flagged = struct('ind_manual',ind_manual_global,'ind_grossRange',ind_grossRange,'ind_spike',ind_spike,'ind_oow',ind_oow,'d_high',d_high,'d_low',d_low,'spike_threshold',spike_threshold);
 
-%====Convert table to timetable============================================
-% Recalculate with cleaned DO concentration data
-sonde1_TT = table2timetable(sonde1_all,'RowTimes','datetime_utc');
-newTimeStep = minutes(10);
-sonde1_TT = retime(sonde1_TT,'regular','mean','TimeStep',newTimeStep); % Calculate mean of values in each time bin
-
-sonde1_TT.datetime_utc = sonde1_TT.datetime_utc + newTimeStep/2;
-sonde1_TT.datetime_local = sonde1_TT.datetime_utc;
-sonde1_TT.datetime_local.TimeZone = 'America/New_York';
-
 %====Plot the cleaned data=================================================
 fig = figure;clf
 fig.WindowState = 'maximized';
@@ -415,8 +390,8 @@ cd([rootpath,'\figures\open-water-platform-figures\gull\data-qc\bc'])
 S_low = 0;      % Lower limit (psu) - flag all negative values as FAIL
 S_high = 50;     % Upper limit (psu) - not sure what should be
 
-ind_low = find(sonde1_all.salinity < d_low);
-ind_high = find(sonde1_all.salinity > d_high);
+ind_low = find(sonde1_all.salinity < S_low);
+ind_high = find(sonde1_all.salinity > S_high);
 % Don't duplicate points already defined to be manually removed
 ind_low = setdiff(ind_low,ind_manual_global);   
 ind_high = setdiff(ind_high,ind_manual_global);
@@ -454,13 +429,13 @@ set(gca,'YScale','log','FontSize',FontSize)
 % Plot original data with flagged points
 fig = figure;clf
 fig.WindowState = 'maximized';
-h0 = plot(sonde1_all.datetime_utc,sonde1_all.depth,'.k');
+h0 = plot(sonde1_all.datetime_utc,sonde1_all.salinity,'.k');
 hold on
-h1 = plot(sonde1_all.datetime_utc(ind_manual_global),sonde1_all.salinity(ind_manual_global),'og');
-h2 = plot(sonde1_all.datetime_utc(ind_oow),sonde1_all.salinity(ind_oow),'oc');
-h3 = plot(sonde1_all.datetime_utc(ind_grossRange),sonde1_all.salinity(ind_grossRange),'or');
-h4 = plot(sonde1_all.datetime_utc(ind_spike),sonde1_all.salinity(ind_spike),'om');
-xline([sonde1_all.datetime_utc(1); sonde1_all.datetime_utc(ind_dep+1)],'--',label);
+h1 = plot(sonde1_all.datetime_utc(ind_manual_global),sonde1_all.salinity(ind_manual_global),'og','MarkerSize',4);
+h2 = plot(sonde1_all.datetime_utc(ind_oow),sonde1_all.salinity(ind_oow),'oc','MarkerSize',4);
+h3 = plot(sonde1_all.datetime_utc(ind_grossRange),sonde1_all.salinity(ind_grossRange),'or','MarkerSize',4);
+h4 = plot(sonde1_all.datetime_utc(ind_spike),sonde1_all.salinity(ind_spike),'om','MarkerSize',4);
+xline([sonde1_all.datetime_utc(1); sonde1_all.datetime_utc(ind_dep+1)],'--',label)
 hold off
 ylabel('Salinity (psu)')
 legend([h0 h1 h2 h3 h4],'Original Data','Manual Removal','Out of Water','Gross Range Test','Spike Test','location','best')
@@ -475,13 +450,14 @@ sonde1_all.salinity(ind_grossRange) = NaN;
 sonde1_all.salinity(ind_spike) = NaN;
 sonde1_all.salinity(ind_oow) = NaN;
 
-% Flag all NaNs as FAIL
-ind_fail = find(isnan(sonde1_all.salinity));
+% Flag all NaNs as FAILind_fail = find(isnan(sonde1_all.salinity));
 flags1.salinity(ind_fail) = 4;
 
 % Create structure to save flagged salinity indices
-S_flagged = struct('ind_manual',ind_manual_global,'ind_grossRange',ind_grossRange,'ind_spike',ind_spike,'ind_oow',ind_oow,'d_high',d_high,'d_low',d_low,'spike_threshold',spike_threshold);
+S_flagged = struct('ind_manual',ind_manual_global,'ind_grossRange',ind_grossRange,'ind_spike',ind_spike,'ind_oow',ind_oow,'S_high',S_high,'S_low',S_low,'spike_threshold',spike_threshold);
 
+
+%%
 %====Convert table to timetable============================================
 sonde1_TT = table2timetable(sonde1_all,'RowTimes','datetime_utc');
 newTimeStep = minutes(10);
@@ -503,7 +479,7 @@ xline([sonde1_all.datetime_utc(1); sonde1_all.datetime_utc(ind_dep+1)],'--',labe
 ylabel('Salinity (psu)')
 title('Gull BC Sonde - Cleaned & Retimed Salinity Data')
 xlim([dt1 dt2])                 % Use same x limits for comparing sites
-% ylim([-.5 3])
+ylim([-.5 50])
 set(gca,'FontSize',FontSize)
 
-clearvars ind_high ind_low ind_grossRange ind_spike C ig is
+% clearvars ind_high ind_low ind_grossRange ind_spike C ig is
