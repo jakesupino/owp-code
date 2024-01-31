@@ -7,11 +7,12 @@
 % Emily Chua 
 % 
 % DATE:
-% 10/42023
+% First created: 9/14/2023
+% Last amended: 1/24/2024
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %===Read in sonde data=====================================================
-clear all;close all;clc
+clear;close all;clc
 
 site = 'south';
 
@@ -46,48 +47,48 @@ depSite = [upper(depSite{1}(1)),depSite{1}(2:end)];
 % Name parameters based on order in .csv file
 switch depNum
     case{1, 2}
-    paramNames1 = ["datetime_utc","depth","temperature","salinity","chla","nitrate","DO_conc"];
-    paramNames2 = ["datetime_utc","depth","temperature","salinity","turbidity","pH","DO_conc"];
-    
+        paramNames1 = ["datetime_utc","depth","temperature","salinity","chla","nitrate","DO_conc"];
+        paramNames2 = ["datetime_utc","depth","temperature","salinity","turbidity","pH","DO_conc"];
+
     case{4}
-    paramNames1 = ["datetime_local","nitrate","nitrate_raw","specific_cond","salinity",...
-        "DO_conc","DO_sat","pO2","chla","temperature","external_voltage","depth"];
-    
+        paramNames1 = ["datetime_local","nitrate","nitrate_raw","specific_cond","salinity",...
+            "DO_conc","DO_sat","pO2","chla","temperature","external_voltage","depth"];
+
     case{5}
-    paramNames1 = ["datetime_local","datetime_utc","actual_cond","specific_cond","salinity","resistivity",...
-        "density","TDS","DO_conc","DO_sat","pO2","chla",...
-        "temperature","barometric_p","p","depth"];
-    paramNames2 = ["datetime_local","datetime_utc","actual_cond","specific_cond","salinity","resistivity",...
-        "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","turbidity",...
-        "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
+        paramNames1 = ["datetime_local","datetime_utc","actual_cond","specific_cond","salinity","resistivity",...
+            "density","TDS","DO_conc","DO_sat","pO2","chla",...
+            "temperature","barometric_p","p","depth"];
+        paramNames2 = ["datetime_local","datetime_utc","actual_cond","specific_cond","salinity","resistivity",...
+            "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","turbidity",...
+            "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
 
     case{6}
-    paramNames1 = ["datetime_utc","depth","temperature","salinity",...
-        "specific_cond","chla","pH","pH_raw","DO_conc","DO_sat"];
+        paramNames1 = ["datetime_utc","depth","temperature","salinity",...
+            "specific_cond","chla","pH","pH_raw","DO_conc","DO_sat"];
 
     case{7}
-    paramNames1 = ["datetime_local","chla","actual_cond","specific_cond","salinity","resistivity",...
-        "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP",...
-        "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
-    paramNames2 = ["datetime_local","actual_cond","specific_cond","salinity","resistivity",...
-        "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","turbidity",...
-        "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
-    
+        paramNames1 = ["datetime_local","chla","actual_cond","specific_cond","salinity","resistivity",...
+            "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP",...
+            "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
+        paramNames2 = ["datetime_local","actual_cond","specific_cond","salinity","resistivity",...
+            "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","turbidity",...
+            "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
+
     case{9}
-    paramNames1 = ["datetime_local","actual_cond","specific_cond","salinity","resistivity",...
-        "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","chla",...
-        "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
-    paramNames2 = ["datetime_local","actual_cond","specific_cond","salinity","resistivity",...
-        "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","chla",...
-        "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
-    
-    case{8,10,11,12,13,14}
-    paramNames1 = ["datetime_local","actual_cond","specific_cond","salinity","resistivity",...
-        "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","chla",...
-        "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
-    paramNames2 = ["datetime_local","actual_cond","specific_cond","salinity","resistivity",...
-        "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","turbidity",...
-        "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
+        paramNames1 = ["datetime_local","actual_cond","specific_cond","salinity","resistivity",...
+            "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","chla",...
+            "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
+        paramNames2 = ["datetime_local","actual_cond","specific_cond","salinity","resistivity",...
+            "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","chla",...
+            "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
+
+    case{8,10,11,12,13,14,16}
+        paramNames1 = ["datetime_local","actual_cond","specific_cond","salinity","resistivity",...
+            "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","chla",...
+            "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
+        paramNames2 = ["datetime_local","actual_cond","specific_cond","salinity","resistivity",...
+            "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","turbidity",...
+            "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
 
     case{15}
         paramNames2 = ["datetime_local","actual_cond","specific_cond","salinity","resistivity",...
@@ -162,7 +163,7 @@ switch depNum
     case{6}
     sonde1.datetime_utc.TimeZone = 'America/New_York';
 
-    case{7,8,9,10,11,12,13,14}
+    case{7,8,9,10,11,12,13,14,16}
     sonde1.datetime_local.TimeZone = 'America/New_York';
     datetime_utc1 = datetime(sonde1.datetime_local,'TimeZone','UTC');
     datetime_utc1 = table(datetime_utc1,'VariableNames',"datetime_utc");
@@ -182,7 +183,7 @@ end
 
 % Create columns filled with NaNs for parameters not measured
 switch depNum
-    case {1,2}
+    case{1,2}
     % sonde1 (BC)
     datetime_local = array2table(NaT(height(sonde1),1,'TimeZone','America/New_York'),'VariableNames',"datetime_local");
     actual_cond = array2table(NaN(height(sonde1),1),'VariableNames',"actual_cond");
@@ -232,7 +233,7 @@ switch depNum
     battery_capacity = array2table(NaN(height(sonde1),1),'VariableNames',"battery_capacity");
     sonde1 = [actual_cond resistivity density barometric_p p TDS pH pH_raw ORP battery_capacity sonde1];
     
-    case 5
+    case{5}
     % sonde1 (BC)
     pH = array2table(NaN(height(sonde1),1),'VariableNames',"pH");
     pH_raw = array2table(NaN(height(sonde1),1),'VariableNames',"pH_raw");
@@ -242,7 +243,7 @@ switch depNum
     nitrate = array2table(NaN(height(sonde1),1),'VariableNames',"nitrate");
     sonde1 = [pH pH_raw ORP external_voltage battery_capacity nitrate sonde1];
     
-    case 6
+    case{6}
     % sonde1 (BC)
     datetime_local = array2table(NaT(height(sonde1),1,'TimeZone','America/New_York'),'VariableNames',"datetime_local");
     actual_cond = array2table(NaN(height(sonde1),1),'VariableNames',"actual_cond");
@@ -258,7 +259,7 @@ switch depNum
     nitrate = array2table(NaN(height(sonde1),1),'VariableNames',"nitrate");
     sonde1 = [datetime_local actual_cond resistivity density barometric_p p TDS pO2 ORP external_voltage battery_capacity nitrate sonde1];
    
-    case 9
+    case{9}
     % sonde1 (BC)
     nitrate = array2table(NaN(height(sonde1),1),'VariableNames',"nitrate");
     sonde1 = [nitrate sonde1];
@@ -266,7 +267,7 @@ switch depNum
     turbidity = array2table(NaN(height(sonde2),1),'VariableNames',"turbidity");
     sonde2 = [turbidity sonde2];
 
-    case {7,8,10,11,12,13,14}
+    case{7,8,10,11,12,13,14,16}
     % sonde1 (BC)
     nitrate = array2table(NaN(height(sonde1),1),'VariableNames',"nitrate");
     sonde1 = [nitrate sonde1];
@@ -276,11 +277,11 @@ end
 
 % Depth: Convert [ft] to [m]
 switch depNum
-    case 9
+    case{9}
         sonde1.depth = sonde1.depth/3.281;
-    case {10,11}
+    case{10,11}
         sonde2.depth = sonde2.depth/3.281;
-    case{12,13,14}
+    case{12,13,14,16}
         sonde1.depth = sonde1.depth/3.281;
         sonde2.depth = sonde2.depth/3.281;
 end

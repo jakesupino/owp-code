@@ -1,0 +1,356 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% dielAnalysis.m
+% This script uses the diel oxygen method to calculate GPP, ER, and NEM
+% following Beck et al. (2015)
+%
+% AUTHOR:
+% Emily Chua 
+% 
+% DATE:
+% January 2024
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+clear;close all;clc
+
+rootpath = 'G:\My Drive\Postdoc\Work\SMIIL\';
+
+%====Import data===========================================================
+cd([rootpath,'open-water-platform-data\gull\cleaned'])
+load gull-cleaned.mat
+
+cd([rootpath,'physical-data\wind-speed'])
+load windSpeed.mat
+
+cd([rootpath,'physical-data\par'])
+load par.mat
+
+cd([rootpath,'physical-data\baro-pressure'])
+load baroPress.mat
+
+% Retime cleaned Gull met data to same datetimes as sonde data 
+newTimes = sonde1_cleaned.datetime_utc(1):minutes(10):sonde1_cleaned.datetime_utc(end);
+metDat_rt = retime(metDat_cleaned,newTimes,'mean'); 
+
+%====Gap fill Gull met station wind speed data using NOAA daily means======
+% Retime NOAA data to same datetimes as sonde data 
+noaaDat_rt = retime(noaaDat,newTimes,'previous');
+
+% Find where there are gaps in Gull met station wind speed data
+for i = 1:height(metDat_rt.datetime_utc)
+    nid = find(isnan(metDat_rt.wspd));
+    id(1:length(nid),1) = nid;
+end
+
+figure(1),clf
+plot(metDat_rt.datetime_utc,metDat_rt.wspd,'.-')
+hold on
+plot(noaaDat_rt.date(id),noaaDat_rt.wspd_avg(id),'or','MarkerSize',4)
+ylabel('Wind Speed (m/s)')
+legend('Gull Met Station','NOAA Daily Mean')
+title('Gap-Filled Wind Speed Data')
+%%
+% Replace missing Gull windspeed data with NOAA windspeed data
+ind_nan = find(isnan(metDat_rt.wspd));
+metDat_rt.wspd(ind_nan) = noaaDat_rt.wspd_avg(ind_nan);
+
+%====Gap filling Gull met station air T data===============================
+% Retime PAR data to same datetimes as sonde data 
+parDat_rt = retime(parDat,newTimes,'previous');
+% Cut off data once original dataset ends
+endDate = parDat.datetime_utc(end);
+ind_end = find(ismember(parDat_rt.datetime_utc,endDate));
+parDat_rt(ind_end:end,{'Tair' 'light_lux' 'par'}) = {NaN};
+
+% Retime Baro Pressure HOBO data to same datetimes as sonde data
+bpDat_rt = retime(bpDat,newTimes,'previous');
+% Cut off data once original dataset ends
+endDate = bpDat.datetime_utc(end);
+ind_end = find(ismember(bpDat_rt.datetime_utc,endDate));
+bpDat_rt(ind_end:end,{'patm' 'Tair'}) = {NaN};
+
+% Find where there are gaps in Gull met station air T data
+for i = 1:height(metDat_rt.datetime_utc)
+    nid = find(isnan(metDat_rt.Tair));
+    id(1:length(nid),1) = nid;
+end
+
+% See if the PAR or the BP sensor do a better job of matching the met station data
+figure(2),clf
+plot(metDat_rt.datetime_utc,metDat_rt.Tair,'.','MarkerSize',10)
+hold on
+plot(parDat_rt.datetime_utc,parDat_rt.Tair,'.r','MarkerSize',4)
+plot(bpDat_rt.datetime_utc,bpDat_rt.Tair,'.g','MarkerSize',4)
+ylabel('Air Temperature (^oC)')
+legend('Gull Met Station','PAR Dataset','Baro Pressure Dataset')
+title('Assessing Air Temperature Datasets')
+
+% Replace missing Gull T_air data with HOBO Baro Pressure T_air data
+ind_nan = find(isnan(metDat_rt.Tair));
+metDat_rt.Tair(ind_nan) = bpDat_rt.Tair(ind_nan);
+
+figure(3),clf
+plot(metDat_rt.datetime_utc,metDat_rt.Tair,'.','MarkerSize',4)
+hold on
+plot(metDat_rt.datetime_utc(ind_nan),metDat_rt.Tair(ind_nan),'og','MarkerSize',6,'LineWidth',1)
+ylabel('Air Temperature (^oC)')
+legend('Gull Met Station','Baro Pressure Dataset','location','southeast')
+title('Gap-Filled Air Temperature Data')
+
+%====Gap filling Gull met station atmos p data============================
+figure(4),clf
+plot(metDat_rt.datetime_utc,metDat_rt.patm,'.','MarkerSize',4)
+hold on
+plot(bpDat_rt.datetime_utc,bpDat_rt.patm,'.g','MarkerSize',4)
+ylabel('p_{atm} (hPa)')
+legend('Gull Met Station','Baro Pressure Dataset')
+title('Assessing Atmospheric Pressure Datasets')
+
+% Old: Gap fill met station BP data with the global mean value
+% patm_mean = mean(metDat_cleaned.patm,'omitmissing');
+% ind_nan = find(isnan(metDat_rt.patm));
+% metDat_rt.patm(ind_nan) = patm_mean;
+
+% Replace missing Gull p_atm data with HOBO Baro Pressure p_atm data
+ind_nan = find(isnan(metDat_rt.patm));
+metDat_rt.patm(ind_nan) = bpDat_rt.patm(ind_nan);
+
+figure(5),clf
+plot(metDat_rt.datetime_utc,metDat_rt.patm,'.','MarkerSize',4)
+hold on
+plot(metDat_rt.datetime_utc(ind_nan),metDat_rt.patm(ind_nan),'og','MarkerSize',6,'LineWidth',1)
+ylabel('p_{atm} (hPa)')
+legend('Gull Met Station','Baro Pressure Dataset')
+title('Gap-Filled Atmospheric Pressure Data')
+
+% Horizontally concatenate sonde and met data (already have common time vector)
+dat = synchronize(sonde1_cleaned,metDat_rt);
+% dat = rmmissing(dat,'DataVariables',{'DO_conc','wspd'});
+
+% Check how many days of data remain in synchronized data
+dataPoints = daysact(dat.datetime_utc(1),dat.datetime_utc);
+wholeDays = length(unique(floor(dataPoints)));
+
+%% STEP 1
+%====Calculate DO concentration at equilibrium (DO_sat)=================
+DO_sat = O2sol(dat.salinity,dat.temperature);     % [umol kg-1]
+% Use Gibbs Seawater toolbox to calculate seawater density
+rho_sw = gsw_rho(dat.salinity,dat.temperature,dat.p); % [kg m-3]
+% Convert DO_sat units
+DO_sat = DO_sat.*rho_sw/1000;       % [mmol m-3]
+% Convert DO_conc units
+DO_conc = dat.DO_conc*1000/1000;    % [mmol m-3]
+% Calculate the percent oxygen saturation
+DO_per_sat = dat.DO_conc./DO_sat*100;   % [%]
+
+%% STEP 2
+%====Calculate gas exchange at air-water interface=======================
+% Caffrey/Beck (uses "reaeration coefficient", ka)
+
+H = mean(dat.depth,'omitnan');      % Mean water depth [m] -- add a constant (e.g., 0.5 m) to account for height of sonde above bottom?
+Tkair = dat.Tair + 273.15;          % Absolute air temperature [K]
+R_specific = 287.0500676;           % Specific gas constant for dry air [J kg-1 K-1]
+rho_a = dat.patm*100 ./ (R_specific*Tkair); % Density of dry air [kg m-3]
+T = dat.temperature;                % Water temperature [degC]
+S = dat.salinity;
+u = dat.wspd;
+
+% Calculate Vw
+for i = 1:length(T)
+    Uw(i,1) = swp('m',S(i),T(i));  % Dynamic viscosity [kg m-1 s-1]
+end
+Vw = Uw./rho_sw;    % Kinematic viscosity [m2 s-1]
+kB = 1.3806503E-23; % Boltzmann's constant [m2 kg s-2 K-1]
+R0 = 1.72E-10;      % Radius of O2 molecule [m]
+Tk = T + 273.15;    % Absolute temperature [K]
+ka = 1/H * 0.1706 .* (kB*Tk./(4*rho_sw.*Vw.^2.*R0)).^0.5 .* (rho_a./rho_sw).^0.5 .* u.^1.81;
+
+% Air-water flux
+D = ka.*(DO_sat - dat.DO_conc); % [mmol m-3 h-1]
+
+%% STEP 3
+%====Apply filter========================================================
+% Needoba uses HBF
+% Caffrey et al. (2014) doesn't bother with filtering
+% Beck et al. (2015) uses their R package to remove tidal advection
+
+%% STEP 4
+%====Determine day/night times=============================================
+% Get day/night indices based on lat and lon and Hilary's indexDayNight function
+% Or use PAR data for SMIIL analysis??
+lat = 39.08;
+lon = -74.78;
+time_in = dat.datetime_utc;
+tol = 0;
+
+% Manually define DST start and end times
+start1 = datenum('03/14/2021 02:00','mm/dd/yyyy HH:MM');
+end1 = datenum('11/07/2021 02:00','mm/dd/yyyy HH:MM');
+start2 = datenum('03/13/2022 02:00','mm/dd/yyyy HH:MM');
+end2 = datenum('11/6/2022 02:00','mm/dd/yyyy HH:MM');
+start3 = datenum('03/12/2023 02:00','mm/dd/yyyy HH:MM');
+end3 = datenum('11/5/2023 02:00','mm/dd/yyyy HH:MM');
+
+% Calculate all day/night indices assuming EDT
+UTCoffset = -4; % [h]
+[dayind_edt,nightind_edt] = indexDayNight_EJC(lat,lon,UTCoffset,time_in,tol);
+
+% Calculate all day/night indices assuming EST
+UTCoffset = -5; % [h]
+[dayind_est,nightind_est] = indexDayNight_EJC(lat,lon,UTCoffset,time_in,tol);
+
+% Find closest indices in datetime_utc that match DST start and end times
+[~,edt_end1] = min(abs(datenum(dat.datetime_utc)-end1));    % Note: This date isn't close due to the data gap in fall 2021/winter 2022
+[~,edt_start2] = min(abs(datenum(dat.datetime_utc)-start2));
+[~,edt_end2] = min(abs(datenum(dat.datetime_utc)-end2));
+[~,edt_start3] = min(abs(datenum(dat.datetime_utc)-start3));
+[~,edt_end3] = min(abs(datenum(dat.datetime_utc)-end3));
+
+dayind_edt = table(dayind_edt,repmat({'day'},[length(dayind_edt),1]));
+dayind_edt.Properties.VariableNames = ["index","day/night"];
+nightind_edt = table(nightind_edt,repmat({'night'},[length(nightind_edt),1]));
+nightind_edt.Properties.VariableNames = ["index","day/night"];
+ind_edt = [dayind_edt; nightind_edt];
+ind_edt = sortrows(ind_edt);
+
+dayind_est = table(dayind_est,repmat({'day'},[length(dayind_est),1]));
+dayind_est.Properties.VariableNames = ["index","day/night"];
+nightind_est = table(nightind_est,repmat({'night'},[length(nightind_est),1]));
+nightind_est.Properties.VariableNames = ["index","day/night"];
+ind_est = [dayind_est; nightind_est];
+ind_est = sortrows(ind_est);
+
+% Define periods for whether it is DST or not
+t1 = ind_edt(1:edt_end1,:);                 % EDT period
+t2 = ind_est(edt_end1+1:edt_start2-1,:);    % EST period
+t3 = ind_edt(edt_start2:edt_end2,:);        % EDT period
+t4 = ind_est(edt_end2+1:edt_start3-1,:);    % EST period
+t5 = ind_edt(edt_start3:edt_end3,:);        % EDT period
+t6 = ind_est(edt_end3+1:end,:);             % EST period
+
+daynightind = [t1;t2;t3;t4;t5;t6];
+
+dayind = strcmp(daynightind.("day/night"),'day');
+nightind = strcmp(daynightind.("day/night"),'night');
+
+% For plotting, create datetimes for when EDT begins/ends each year during data record
+end1_dt = datetime(end1,'ConvertFrom','datenum','TimeZone','UTC');
+start2_dt = datetime(start2,'ConvertFrom','datenum','TimeZone','UTC');
+end2_dt = datetime(end2,'ConvertFrom','datenum','TimeZone','UTC');
+start3_dt = datetime(start3,'ConvertFrom','datenum','TimeZone','UTC');
+end3_dt = datetime(end3,'ConvertFrom','datenum','TimeZone','UTC');
+
+figure(3),clf
+plot(dat.datetime_utc(dayind),dat.DO_conc(dayind),'.b','MarkerSize',12)
+hold on
+plot(dat.datetime_utc(nightind),dat.DO_conc(nightind),'.k','MarkerSize',12)
+xline(end1_dt,'--','label','DST Ends')
+xline(start2_dt,'--','label','DST Starts')
+xline(end2_dt,'--','label','DST Ends')
+xline(start3_dt,'--','label','DST Starts')
+xline(end3_dt,'--','label','DST Ends')
+ylabel('DO conc (\mumol/L)')
+
+% Find the indices for when each day starts and stops
+daystart = find(diff(dayind) == 1);
+dayend = find(diff(dayind) == -1);
+
+% Length of each day
+daylength = dat.datetime_utc(dayend(2:end)) - dat.datetime_utc(daystart(1:end-1));
+daylength = hours(daylength);
+
+daystart_dt = dat.datetime_utc(daystart(1:end-1));
+dayend_dt = dat.datetime_utc(dayend(2:end));
+
+%% HERE
+% ind_long = find(daylength > 15);
+% ind_short = find(daylength < 8);
+
+figure,clf;plot(dat.datetime_utc(daystart(1:end-1)),daylength,'.')
+hold on
+plot(dat.datetime_utc(daystart(ind_long)),daylength(ind_long),'or')
+plot(dat.datetime_utc(daystart(ind_short)),daylength(ind_short),'or')
+
+% daylength(ind_long) = NaN;
+% daylength(ind_short) = NaN;
+
+%%
+% Plot day/night indices with PAR as a check
+figure(4),clf
+yyaxis left
+plot(dat.datetime_utc(dayind),dat.DO_conc(dayind),'.b','MarkerSize',6)
+hold on
+plot(dat.datetime_utc(nightind),dat.DO_conc(nightind),'.k','MarkerSize',6)
+set(gca,'ycolor','k')
+ylabel('DO conc (\mumol/L)')
+
+yyaxis right
+plot(parDat_rt.datetime_utc,parDat_rt.par,'.g','MarkerSize',6)
+set(gca,'ycolor','g')
+ylabel('PAR')
+
+xline(end1_dt,'--','label','DST Ends')
+xline(start2_dt,'--','label','DST Starts')
+xline(end2_dt,'--','label','DST Ends')
+xline(start3_dt,'--','label','DST Starts')
+xline(end3_dt,'--','label','DST Ends')
+%%
+%====Calculate rates=====================================================
+dCdt = nan(length(dat.DO_conc),1);
+dCdt(2:end,1) = diff(dat.DO_conc) ./ hours(diff(dat.datetime_utc));  % [mmol m-3 h-1]
+
+% Hourly rates of respiration and net production
+for i = 1:length(daylength)
+    % During night hours, P = 0
+    R_hourly(i,1) = mean(dCdt(dayend(i+1):daystart(i+1)) - D(dayend(i+1):daystart(i+1)),'omitnan'); % Hourly rate of respiration; [mmol m-3 h-1]
+    % During day hours, P != 0
+    P_hourly(i,1) = mean(dCdt(daystart(i):dayend(i+1)) - D(daystart(i):dayend(i+1)),'omitnan');     % Hourly rate of net production; [mmol m-3 h-1]
+end
+
+figure,clf
+yyaxis left;plot(dat.datetime_utc,dCdt,'.');ylabel('dC/dt')
+yyaxis right;plot(dat.datetime_utc,D,'.');ylabel('D')
+
+% Daily rates
+R_daily = R_hourly .* 24;                      % Daily rate of respiration; [mmol m-3 d-1]
+P_daily = (P_hourly - R_hourly) .* daylength;  % Daily rate of gross production; [mmol m-3 d-1]
+
+% Convert volumetric rates to depth-integrated (aereal) estimates
+GPP = P_daily * H;      % [mmol O2 m-2 d-1]
+ER = R_daily * H;       % [mmol O2 m-2 d-1]
+NEM = GPP + ER;         % [mmol O2 m-2 d-1]
+
+metab_tbl = table(daystart_dt,dayend_dt,daylength,R_hourly,P_hourly,R_daily,P_daily,GPP,ER,NEM);
+%%
+% Plot metabolism results
+figure(1),clf
+plot(dat.datetime_utc(daystart(1:end-1)),GPP,'.-','MarkerSize',12,'LineWidth',1)
+hold on
+plot(dat.datetime_utc(daystart(1:end-1)),ER,'k.-','MarkerSize',12,'LineWidth',1)
+plot(dat.datetime_utc(daystart(1:end-1)),NEM,'r.-','MarkerSize',12,'LineWidth',1)
+ylabel('mmol O_2 m^{-2} d^{-1}','FontSize',14)
+legend({'GPP','ER','NEM'},'FontSize',14)
+set(gca,'FontSize',14,'LineWidth',2)
+title('Gull - BC Sonde')
+
+cd('G:\My Drive\Postdoc\Work\SMIIL\figures\diel-analysis-figures')
+%%
+% Plot DO concentration and metabolism results 
+figure(2),clf
+tiledlayout(2,1)
+
+ax1 = nexttile;
+% plot(dat.datetime_utc(daystart(1:end-1)),dat.DO_conc(daystart(1:end-1)),'.-','MarkerSize',12,'LineWidth',1)
+plot(dat.datetime_utc,dat.DO_conc,'.-','MarkerSize',6,'LineWidth',1)
+ylabel('DO conc (umol L^{-1})','FontSize',14)
+title('Gull - BC Sonde')
+
+ax2 = nexttile;
+plot(dat.datetime_utc(daystart(1:end-1)),GPP,'.-','MarkerSize',12,'LineWidth',1);
+hold on
+plot(dat.datetime_utc(daystart(1:end-1)),ER,'k.-','MarkerSize',12,'LineWidth',1)
+plot(dat.datetime_utc(daystart(1:end-1)),NEM,'r.-','MarkerSize',12,'LineWidth',1)
+ylabel('mmol O_2 m^{-2} d^{-1}','FontSize',14)
+legend({'GPP','ER','NEM'},'FontSize',14)
+set(gca,'FontSize',14,'LineWidth',2)
+
+linkaxes([ax1 ax2],'x')
