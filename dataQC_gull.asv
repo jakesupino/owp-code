@@ -403,7 +403,7 @@ legend([h0 h1 h2 h3 h4],'Original Data','Manual Removal','Gross Range Test','Spi
 title('QC Tests: Gull BC Sonde - Salinity')
 xlim([dt1 dt2])                 % Use same x limits for comparing sites
 set(gca,'FontSize',FontSize)
-
+%
 %====Clean data============================================================
 % Discard points that failed Gross Range and Spike Tests and do Manual Removals
 sonde1_all.salinity(ind_manual_global) = NaN;
@@ -435,7 +435,7 @@ fig = figure;clf
 fig.WindowState = 'maximized';
 % h0 = plot(sonde1_all.datetime_utc,depth1_orig,'.','Color',red);
 % hold on
-h1 = plot(sonde1_TT.datetime_utc,sonde1_TT.depth,'.k','MarkerSize',dotsize);
+h1 = plot(sonde1_TT.datetime_utc,sonde1_TT.depth,'.k');
 xline([sonde1_all.datetime_utc(1); sonde1_all.datetime_utc(ind_dep+1)],'--',label);
 % hold off
 % legend([h0 h1],'Original','Retimed','location','best')
@@ -450,7 +450,7 @@ fig = figure;clf
 fig.WindowState = 'maximized';
 % h0 = plot(sonde1_all.datetime_utc,T1_orig,'.','Color',red);
 % hold on
-h1 = plot(sonde1_TT.datetime_utc,sonde1_TT.temperature,'.k','MarkerSize',dotsize);
+h1 = plot(sonde1_TT.datetime_utc,sonde1_TT.temperature,'.k');
 xline([sonde1_all.datetime_utc(1); sonde1_all.datetime_utc(ind_dep+1)],'--',label);
 % hold off
 % legend([h0 h1],'Original','Retimed','location','best')
@@ -464,7 +464,7 @@ fig = figure;clf
 fig.WindowState = 'maximized';
 % h0 = plot(sonde1_all.datetime_utc,DOconc1_orig,'.','Color',red);
 % hold on
-h1 = plot(sonde1_TT.datetime_utc,sonde1_TT.DO_conc,'.k','MarkerSize',dotsize);
+h1 = plot(sonde1_TT.datetime_utc,sonde1_TT.DO_conc,'.k');
 xline([sonde1_all.datetime_utc(1); sonde1_all.datetime_utc(ind_dep+1)],'--',label);
 % hold off
 % legend([h0 h1],'Original','Retimed','location','best')
@@ -478,7 +478,7 @@ fig = figure;clf
 fig.WindowState = 'maximized';
 % h0 = plot(sonde1_all.datetime_utc,depth1_orig,'.','Color',red);
 % hold on
-h1 = plot(sonde1_TT.datetime_utc,sonde1_TT.salinity,'.k','MarkerSize',dotsize);
+h1 = plot(sonde1_TT.datetime_utc,sonde1_TT.salinity,'.k');
 xline([sonde1_all.datetime_utc(1); sonde1_all.datetime_utc(ind_dep+1)],'--',label);
 % hold off
 % legend([h0 h1],'Original','Retimed','location','best')
@@ -488,7 +488,7 @@ xlim([dt1 dt2])                 % Use same x limits for comparing sites
 ylim([-.5 50])
 set(gca,'FontSize',FontSize)
 
-%====Save the cleaned data=================================================
+%%
 sonde1_cleaned = sonde1_TT;
 cd([rootpath,'open-water-platform-data\gull\cleaned'])
 save('gull-cleaned.mat','sonde1_cleaned','flags1')

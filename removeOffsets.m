@@ -8,10 +8,11 @@
 % Emily Chua
 %
 % DATE:
-% 10/12/2023
+% First created: 10/12/2023
+% Last amended: 1/24/2024
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-clear all;close all;clc
+clear;close all;clc
 
 rootpath = 'G:\My Drive\Postdoc\Work\SMIIL\';
 
@@ -21,7 +22,7 @@ close(fig)
 
 % Load merged data for the platform
 cd([rootpath,'open-water-platform-data\',site,'\original\merged'])
-load(['alldeps-',site,'.mat'])
+load(['alldeps-',site,'-raw.mat'])
 
 means1 = grpstats(sonde1_all,"deployment",{"mean"});
 means2 = grpstats(sonde2_all,"deployment",{"mean"});
@@ -30,8 +31,8 @@ means2 = grpstats(sonde2_all,"deployment",{"mean"});
 % erroneously high, excluding zero values.
 switch site
     case 'gull'
-        alldepths1_avg = mean(nonzeros(means1.mean_depth([1 2 3:8 10 11 13]))); % BC: Dep# 1, 2, 5-10, 12, 13, 15
-        alldepths2_avg = mean(nonzeros(means2.mean_depth([1:6 8:10 13]))); % ERDC: Dep# 1, 2, 5-8, 10-12, 15
+        alldepths1_avg = mean(nonzeros(means1.mean_depth([1 2 3:8 10 11 13 14]))); % BC: Dep# 1, 2, 5-10, 12, 13, 15, 16
+        alldepths2_avg = mean(nonzeros(means2.mean_depth([1:6 8:10 13 14]))); % ERDC: Dep# 1, 2, 5-8, 10-12, 15, 16
     case 'north'
         alldepths1_avg = mean(nonzeros(means1.mean_depth([1:6 8 10 11]))); % BC: Dep# 2, 6-10, 12, 14, 15
         alldepths2_avg = mean(nonzeros(means2.mean_depth([1:4 7 8 10 11]))); % ERDC: Dep# 2, 6-8, 11, 12, 14, 15
@@ -199,7 +200,7 @@ datetime_utc2_adj = sonde2.datetime_utc + delta_t2;
 datetime_local1_adj = sonde1.datetime_local + delta_t1;
 datetime_local2_adj = sonde2.datetime_local + delta_t2;
 
-%% Adjust for Daylight Saving Time
+% Adjust for Daylight Saving Time
 dt1 = diff(datetime_utc1_adj);
 dst_end1 = find(dt1 > hours(1));
 dst_start1 = find(dt1 < 0);
@@ -223,14 +224,13 @@ elseif ~isempty(dst_start2)
     datetime_utc2_adj(dst_start2+1:end) = datetime_utc2_adj(dst_start2+1:end) + hours(1);
 end
 
-
 %===Plot adjusted data=============================================
 fig3 = figure(4);
 fig3.WindowState = 'maximized';
-h3 = plot(usgs.datetime_utc,usgs.tidal_elev,'.k');
+h3 = plot(usgs.datetime_utc,usgs.tidal_elev,'.k','MarkerSize',12);
 hold on
-h1 = plot(datetime_utc1_adj,depth1_adj,'.','Color',red);
-h2 = plot(datetime_utc2_adj,depth2_adj,'.','Color',blue);
+h1 = plot(datetime_utc1_adj,depth1_adj,'.','Color',red,'MarkerSize',12);
+h2 = plot(datetime_utc2_adj,depth2_adj,'.','Color',blue,'markersize',12);
 hold off
 legend([h1 h2 h3],'BC','ERDC','USGS')
 xlim([min(datetime_utc1_adj) max(datetime_utc1_adj)])

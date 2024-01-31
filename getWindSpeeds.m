@@ -7,7 +7,7 @@
 % Emily Chua 
 % 
 % DATE:
-% January 2023
+% January 2024
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 clear;close all;clc
@@ -140,16 +140,19 @@ legend('Gull Met Station (cleaned)','NOAA - Atlantic City Marina')
 
 % Plot linear regression between cleaned Gull Met and NOAA data
 tbl = table(metDat_dailyMean.wspd,noaaDat.wspd_avg(start:stop));
-mdl = fitlm(tbl,'linear');
+tbl.Properties.VariableNames = ["metDat","noaa"];
+mdl = fitlm(tbl.metDat,tbl.noaa,'y~x1-1');  % Force intercept through zero; see Wilkinson notation
 
 % Create equation string for plot
-eqn = ['y = ',num2str(mdl.Coefficients.Estimate(2),2),'x + ',num2str(mdl.Coefficients.Estimate(1),2)];
+eqn = ['y = ',num2str(mdl.Coefficients.Estimate,3),'x'];
 R2 = num2str(mdl.Rsquared.Ordinary,2);
 
 figure(5),clf
 h = plot(mdl,'marker','.');
 delete(h([3 4]))    % Delete confidence bounds on plot
-legend('Data',[eqn,newline,'R^2 = ',R2])
+hold on
+plot([0 ylim], [0 ylim],'--k')
+legend('Data',[eqn,newline,'R^2 = ',R2],'1:1 line')
 xlabel('Gull Met Station (Cleaned)')
 ylabel('NOAA - Atlantic City')
 title('Daily Mean Wind Speed (m/s)')

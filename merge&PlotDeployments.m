@@ -7,7 +7,8 @@
 % Emily Chua 
 % 
 % DATE:
-% 9/27/2023
+% First created: 9/14/2023
+% Last amended: 1/24/2024
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 clear all;close all;clc
@@ -69,28 +70,6 @@ blue = [0 0.4470 0.7410];       % ERDC sonde
 FontSize = 14;
 LineWidth = 1;
 
-switch site
-    case 'gull'
-        label = {'Deployment 1','Deployment 2','Deployment 5','Deployment 6',...
-            'Deployment 7','Deployment 8','Deployment 9','Deployment 10',...
-            'Deployment 11','Deployment 12','Deployment 13','Deployment 14',...
-            'Deployment 15'};
-    case 'north'
-        label = {'Deployment 2','Deployment 6','Deployment 7','Deployment 8',...
-            'Deployment 9','Deployment 10','Deployment 11','Deployment 12',...
-            'Deployment 13','Deployment 14','Deployment 15'};
-    case 'south'
-        % BC
-        label1 = {'Deployment 1','Deployment 2','Deployment 4','Deployment 5',...
-            'Deployment 6','Deployment 7','Deployment 8','Deployment 9',...
-            'Deployment 10','Deployment 11','Deployment 12','Deployment 13',...
-            'Deployment 14'};
-        % ERDC
-        label2 = {'Deployment 1','Deployment 2','Deployment 5','Deployment 7',...
-            'Deployment 8','Deployment 9','Deployment 10','Deployment 11',...
-            'Deployment 12','Deployment 13','Deployment 14','Deployment 15'};
-end
-
 % Find indices of deployment changes
 switch site
     case 'gull'
@@ -98,19 +77,21 @@ switch site
         label = {'Deployment 1','Deployment 2','Deployment 5','Deployment 6',...
             'Deployment 7','Deployment 8','Deployment 9','Deployment 10',...
             'Deployment 11','Deployment 12','Deployment 13','Deployment 14',...
-            'Deployment 15'};
+            'Deployment 15','Deployment 16'};
     case 'north'
         ind_dep = find(diff(sonde1_all.deployment) > 0);
         label = {'Deployment 2','Deployment 6','Deployment 7','Deployment 8',...
             'Deployment 9','Deployment 10','Deployment 11','Deployment 12',...
-            'Deployment 13','Deployment 14','Deployment 15'};
+            'Deployment 13','Deployment 14','Deployment 15','Deployment 16'};
     case 'south'
-        ind_dep1 = find(diff(sonde1_all.deployment) > 0);
-        ind_dep = [ind_dep1;length(sonde1_all.datetime_utc)-1];   % Need to add last index bc BC sonde didn't have a Dep 15
+        ind_dep15 = find(ismember(sonde2_all.deployment,15),1);   % BC sonde didn't have a Dep 15; find where it is in erdc data
+        ind_dep15 = interp1(unique(sonde1_all.datetime_utc),1:length(unique(sonde1_all.datetime_utc)),sonde2_all.datetime_utc(ind_dep15),'nearest');
+        ind_dep = find(diff(sonde1_all.deployment) > 0);
+        ind_dep = sort([ind_dep;ind_dep15]);
         label = {'Deployment 1','Deployment 2','Deployment 4','Deployment 5',...
             'Deployment 6','Deployment 7','Deployment 8','Deployment 9',...
             'Deployment 10','Deployment 11','Deployment 12','Deployment 13',...
-            'Deployment 14','Deployment 15'};
+            'Deployment 14','Deployment 15','Deployment 16'};
 end
 
 fig1 = figure(1);
