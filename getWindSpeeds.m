@@ -4,7 +4,7 @@
 % the Gull Island met station and (2) downloaded from the NOAA CDO.
 %
 % AUTHOR:
-% Emily Chua 
+% Jake Supino (based on work done by Emily Chua)
 % 
 % DATE:
 % January 2024

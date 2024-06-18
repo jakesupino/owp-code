@@ -3,8 +3,8 @@
 % This script creates an output table (.mat) of data from the HOBO light logger
 % (which measures light/PAR and air temperature) located at TWI.
 %
-% AUTHOR:
-% Emily Chua 
+% AUTHOR: 
+% Emily Chua
 % 
 % DATE:
 % January 2024
