@@ -8,7 +8,7 @@
 % 
 % DATE:
 % First created: 9/14/2023
-% Last amended: 1/24/2024
+% Last amended: 6/26/2024
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %===Read in sonde data=====================================================
@@ -46,7 +46,7 @@ switch depNum
         paramNames2 = ["datetime_utc","depth","temperature","salinity","specific_cond","turbidity",...
             "pH","pH_raw","DO_conc","DO_sat"];
 
-    case{7,8,9,10,11,12,13,14,15,16}
+    case{7,8,9,10,11,12,13,14,15,16,17,18}
         paramNames1 = ["datetime_local","actual_cond","specific_cond","salinity","resistivity",...
             "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","chla",...
             "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
@@ -77,7 +77,7 @@ switch depNum
         sonde1.datetime_local.TimeZone = 'America/New_York';
         sonde1.datetime_utc.TimeZone = 'UTC';
         sonde2.datetime_utc.TimeZone = 'UTC';
-    case{7,8,9,10,11,12,13,14,15,16}
+    case{7,8,9,10,11,12,13,14,15,16,17,18}
         sonde1.datetime_local.TimeZone = 'America/New_York';
         datetime_utc1 = datetime(sonde1.datetime_local,'TimeZone','UTC');
         datetime_utc1 = table(datetime_utc1,'VariableNames',"datetime_utc");
@@ -153,7 +153,7 @@ switch depNum
         battery_capacity = array2table(NaN(height(sonde2),1),'VariableNames',"battery_capacity");
         sonde2 = [datetime_local actual_cond resistivity density barometric_p p TDS pO2 ORP external_voltage battery_capacity sonde2];
 
-    case{7,8,9,10,11,12,13,14,15,16}
+    case{7,8,9,10,11,12,13,14,15,16,17,18}
         % sonde1 (BC)
         nitrate = array2table(NaN(height(sonde1),1),'VariableNames',"nitrate");
         sonde1 = [nitrate sonde1];
@@ -163,7 +163,7 @@ end
 
 % Depth: Convert [ft] to [m]
 switch depNum
-    case{11,14}
+    case{11,14,17}
         sonde1.depth = sonde1.depth/3.281;
     case{9,10,15}
         sonde2.depth = sonde2.depth/3.281;
@@ -180,7 +180,7 @@ sonde2.DO_conc = sonde2.DO_conc/31.999*10^3;
 switch depNum
     case{9,10,15}
         sonde1.p = sonde1.p/68.9476;
-    case{14}
+    case{14,18}
         sonde2.p = sonde2.p/68.9476;
     case{8}
         sonde1.p = sonde1.p/68.9476;

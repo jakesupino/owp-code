@@ -8,7 +8,7 @@
 %
 % DATE:
 % First created: 9/14/2023
-% Last amended: 1/24/2024
+% Last amended: 6/26/2024
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %===Read in sonde data=====================================================
@@ -59,12 +59,20 @@ switch depNum
             "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","turbidity",...
             "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
 
-    case{7,8,9,10,11,12,13,14,15,16}
+    case{7,8,9,10,11,12,13,14,15,16,18}
         paramNames1 = ["datetime_local","actual_cond","specific_cond","salinity","resistivity",...
             "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","chla",...
             "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
         paramNames2 = ["datetime_local","actual_cond","specific_cond","salinity","resistivity",...
             "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","turbidity",...
+            "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
+
+    case{17}
+        paramNames1 = ["datetime_local","actual_cond","specific_cond","salinity","resistivity",...
+            "density","TDS","DO_conc","DO_sat","pO2","chla",...
+            "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
+        paramNames2 = ["datetime_local","actual_cond","specific_cond","salinity","resistivity",...
+            "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","tu    rbidity",...
             "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
 end
 
@@ -93,7 +101,7 @@ switch depNum
         sonde2.datetime_local.TimeZone = 'America/New_York';
         sonde2.datetime_utc.TimeZone = 'UTC';
 
-    case{7,8,9,10,11,12,13,14,15,16}
+    case{7,8,9,10,11,12,13,14,15,16,17,18}
         sonde1.datetime_local.TimeZone = 'America/New_York';
         datetime_utc1 = datetime(sonde1.datetime_local,'TimeZone','UTC');
         datetime_utc1 = table(datetime_utc1,'VariableNames',"datetime_utc");
@@ -154,9 +162,16 @@ switch depNum
             sonde2 = [DO_sat sonde2];
         end
 
-    case{5,6,7,8,9,10,11,12,13,14,15,16}
+    case{5,6,7,8,9,10,11,12,13,14,15,16,17,18}
         nitrate = array2table(NaN(height(sonde1),1),'VariableNames',"nitrate");
         sonde1 = [nitrate sonde1];
+        
+        if depNum == 17
+            pH = array2table(NaN(height(sonde1),1),'VariableNames',"pH");
+            pH_raw = array2table(NaN(height(sonde1),1),'VariableNames',"pH_raw");
+            ORP = array2table(NaN(height(sonde1),1),'VariableNames',"ORP");
+            sonde1 = [pH pH_raw ORP sonde1];
+        end
 end
 
 %===Convert units==========================================================
@@ -165,7 +180,7 @@ end
 switch depNum
     case{11}
         sonde1.depth = sonde1.depth/3.281;
-    case{9,13}
+    case{9,13,18}
         sonde2.depth = sonde2.depth/3.281;
     case{14,15,16}
         sonde1.depth = sonde1.depth/3.281;
@@ -178,9 +193,9 @@ sonde2.DO_conc = sonde2.DO_conc/31.999*10^3;
 
 % Pressure: Convert [mbar] to [psi]
 switch depNum
-    case{9,12}
+    case{9,12,18}
         sonde1.p = sonde1.p/68.9476;
-    case{11}
+    case{11,17}
         sonde2.p = sonde2.p/68.9476;
 end
 

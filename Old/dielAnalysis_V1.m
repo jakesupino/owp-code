@@ -48,7 +48,7 @@ plot(noaaDat_rt.date(id),noaaDat_rt.wspd_avg(id),'or','MarkerSize',4)
 ylabel('Wind Speed (m/s)')
 legend('Gull Met Station','NOAA Daily Mean')
 title('Gap-Filled Wind Speed Data')
-%%
+
 % Replace missing Gull windspeed data with NOAA windspeed data
 ind_nan = find(isnan(metDat_rt.wspd));
 metDat_rt.wspd(ind_nan) = noaaDat_rt.wspd_avg(ind_nan);
@@ -105,11 +105,6 @@ ylabel('p_{atm} (hPa)')
 legend('Gull Met Station','Baro Pressure Dataset')
 title('Assessing Atmospheric Pressure Datasets')
 
-% Old: Gap fill met station BP data with the global mean value
-% patm_mean = mean(metDat_cleaned.patm,'omitmissing');
-% ind_nan = find(isnan(metDat_rt.patm));
-% metDat_rt.patm(ind_nan) = patm_mean;
-
 % Replace missing Gull p_atm data with HOBO Baro Pressure p_atm data
 ind_nan = find(isnan(metDat_rt.patm));
 metDat_rt.patm(ind_nan) = bpDat_rt.patm(ind_nan);
@@ -165,7 +160,7 @@ Tk = T + 273.15;    % Absolute temperature [K]
 ka = 1/H * 0.1706 .* (kB*Tk./(4*rho_sw.*Vw.^2.*R0)).^0.5 .* (rho_a./rho_sw).^0.5 .* u.^1.81;
 
 % Air-water flux
-D = ka.*(DO_sat - dat.DO_conc); % [mmol m-3 h-1]
+D = ka.*(DO_sat - DO_conc); % [mmol m-3 h-1]
 
 %% STEP 3
 %====Apply filter========================================================
@@ -176,11 +171,13 @@ D = ka.*(DO_sat - dat.DO_conc); % [mmol m-3 h-1]
 %% STEP 4
 %====Determine day/night times=============================================
 % Get day/night indices based on lat and lon and Hilary's indexDayNight function
-% Or use PAR data for SMIIL analysis??
 lat = 39.08;
 lon = -74.78;
 time_in = dat.datetime_utc;
 tol = 0;
+UTCoffset = 0;  % Input datetime vector is in UTC
+
+[dayind,nightind] = indexDayNight_EJC(lat,lon,UTCoffset,time_in,tol);
 
 % Manually define DST start and end times
 start1 = datenum('03/14/2021 02:00','mm/dd/yyyy HH:MM');
@@ -190,47 +187,47 @@ end2 = datenum('11/6/2022 02:00','mm/dd/yyyy HH:MM');
 start3 = datenum('03/12/2023 02:00','mm/dd/yyyy HH:MM');
 end3 = datenum('11/5/2023 02:00','mm/dd/yyyy HH:MM');
 
-% Calculate all day/night indices assuming EDT
-UTCoffset = -4; % [h]
-[dayind_edt,nightind_edt] = indexDayNight_EJC(lat,lon,UTCoffset,time_in,tol);
-
-% Calculate all day/night indices assuming EST
-UTCoffset = -5; % [h]
-[dayind_est,nightind_est] = indexDayNight_EJC(lat,lon,UTCoffset,time_in,tol);
-
-% Find closest indices in datetime_utc that match DST start and end times
-[~,edt_end1] = min(abs(datenum(dat.datetime_utc)-end1));    % Note: This date isn't close due to the data gap in fall 2021/winter 2022
-[~,edt_start2] = min(abs(datenum(dat.datetime_utc)-start2));
-[~,edt_end2] = min(abs(datenum(dat.datetime_utc)-end2));
-[~,edt_start3] = min(abs(datenum(dat.datetime_utc)-start3));
-[~,edt_end3] = min(abs(datenum(dat.datetime_utc)-end3));
-
-dayind_edt = table(dayind_edt,repmat({'day'},[length(dayind_edt),1]));
-dayind_edt.Properties.VariableNames = ["index","day/night"];
-nightind_edt = table(nightind_edt,repmat({'night'},[length(nightind_edt),1]));
-nightind_edt.Properties.VariableNames = ["index","day/night"];
-ind_edt = [dayind_edt; nightind_edt];
-ind_edt = sortrows(ind_edt);
-
-dayind_est = table(dayind_est,repmat({'day'},[length(dayind_est),1]));
-dayind_est.Properties.VariableNames = ["index","day/night"];
-nightind_est = table(nightind_est,repmat({'night'},[length(nightind_est),1]));
-nightind_est.Properties.VariableNames = ["index","day/night"];
-ind_est = [dayind_est; nightind_est];
-ind_est = sortrows(ind_est);
-
-% Define periods for whether it is DST or not
-t1 = ind_edt(1:edt_end1,:);                 % EDT period
-t2 = ind_est(edt_end1+1:edt_start2-1,:);    % EST period
-t3 = ind_edt(edt_start2:edt_end2,:);        % EDT period
-t4 = ind_est(edt_end2+1:edt_start3-1,:);    % EST period
-t5 = ind_edt(edt_start3:edt_end3,:);        % EDT period
-t6 = ind_est(edt_end3+1:end,:);             % EST period
-
-daynightind = [t1;t2;t3;t4;t5;t6];
-
-dayind = strcmp(daynightind.("day/night"),'day');
-nightind = strcmp(daynightind.("day/night"),'night');
+% % Calculate all day/night indices assuming EDT
+% UTCoffset = -4; % [h]
+% [dayind_edt,nightind_edt] = indexDayNight_EJC(lat,lon,UTCoffset,time_in,tol);
+% 
+% % Calculate all day/night indices assuming EST
+% UTCoffset = -5; % [h]
+% [dayind_est,nightind_est] = indexDayNight_EJC(lat,lon,UTCoffset,time_in,tol);
+% 
+% % Find closest indices in datetime_utc that match DST start and end times
+% [~,edt_end1] = min(abs(datenum(dat.datetime_utc)-end1));    % Note: This date isn't close due to the data gap in fall 2021/winter 2022
+% [~,edt_start2] = min(abs(datenum(dat.datetime_utc)-start2));
+% [~,edt_end2] = min(abs(datenum(dat.datetime_utc)-end2));
+% [~,edt_start3] = min(abs(datenum(dat.datetime_utc)-start3));
+% [~,edt_end3] = min(abs(datenum(dat.datetime_utc)-end3));
+% 
+% dayind_edt = table(dayind_edt,repmat({'day'},[length(dayind_edt),1]));
+% dayind_edt.Properties.VariableNames = ["index","day/night"];
+% nightind_edt = table(nightind_edt,repmat({'night'},[length(nightind_edt),1]));
+% nightind_edt.Properties.VariableNames = ["index","day/night"];
+% ind_edt = [dayind_edt; nightind_edt];
+% ind_edt = sortrows(ind_edt);
+% 
+% dayind_est = table(dayind_est,repmat({'day'},[length(dayind_est),1]));
+% dayind_est.Properties.VariableNames = ["index","day/night"];
+% nightind_est = table(nightind_est,repmat({'night'},[length(nightind_est),1]));
+% nightind_est.Properties.VariableNames = ["index","day/night"];
+% ind_est = [dayind_est; nightind_est];
+% ind_est = sortrows(ind_est);
+% 
+% % Define periods for whether it is DST or not
+% t1 = ind_edt(1:edt_end1,:);                 % EDT period
+% t2 = ind_est(edt_end1+1:edt_start2-1,:);    % EST period
+% t3 = ind_edt(edt_start2:edt_end2,:);        % EDT period
+% t4 = ind_est(edt_end2+1:edt_start3-1,:);    % EST period
+% t5 = ind_edt(edt_start3:edt_end3,:);        % EDT period
+% t6 = ind_est(edt_end3+1:end,:);             % EST period
+% 
+% daynightind = [t1;t2;t3;t4;t5;t6];
+% 
+% dayind = strcmp(daynightind.("day/night"),'day');
+% nightind = strcmp(daynightind.("day/night"),'night');
 
 % For plotting, create datetimes for when EDT begins/ends each year during data record
 end1_dt = datetime(end1,'ConvertFrom','datenum','TimeZone','UTC');
@@ -249,44 +246,74 @@ xline(end2_dt,'--','label','DST Ends')
 xline(start3_dt,'--','label','DST Starts')
 xline(end3_dt,'--','label','DST Ends')
 ylabel('DO conc (\mumol/L)')
+xlabel('UTC')
+
+figure(3),clf
+plot(dat.datetime_local(dayind),dat.DO_conc(dayind),'.b','MarkerSize',12)
+hold on
+plot(dat.datetime_local(nightind),dat.DO_conc(nightind),'.k','MarkerSize',12)
+xline(end1_dt,'--','label','DST Ends')
+xline(start2_dt,'--','label','DST Starts')
+xline(end2_dt,'--','label','DST Ends')
+xline(start3_dt,'--','label','DST Starts')
+xline(end3_dt,'--','label','DST Ends')
+ylabel('DO conc (\mumol/L)')
+xlabel('Local')
+
+% tiledlayout(2,1)
+% ax1 = nexttile;
+% plot(dat.datetime_local(dayind),dat.DO_conc(dayind),'.b','MarkerSize',12)
+% hold on
+% plot(dat.datetime_local(nightind),dat.DO_conc(nightind),'.k','MarkerSize',12)
+% xline(end1_dt,'--','label','DST Ends')
+% xline(start2_dt,'--','label','DST Starts')
+% xline(end2_dt,'--','label','DST Ends')
+% xline(start3_dt,'--','label','DST Starts')
+% xline(end3_dt,'--','label','DST Ends')
+% ylabel('DO conc (\mumol/L)')
+% xlabel('Local')
+% ax2 = nexttile;
+% plot(dat.datetime_utc(dayind),dat.DO_conc(dayind),'.b','MarkerSize',12)
+% hold on
+% plot(dat.datetime_utc(nightind),dat.DO_conc(nightind),'.k','MarkerSize',12)
+% xline(end1_dt,'--','label','DST Ends')
+% xline(start2_dt,'--','label','DST Starts')
+% xline(end2_dt,'--','label','DST Ends')
+% xline(start3_dt,'--','label','DST Starts')
+% xline(end3_dt,'--','label','DST Ends')
+% ylabel('DO conc (\mumol/L)')
+% xlabel('UTC')
+% linkaxes([ax1 ax2],'x')
 
 % Find the indices for when each day starts and stops
-daystart = find(diff(dayind) == 1);
-dayend = find(diff(dayind) == -1);
+daystart = dayind(find(diff(dayind) > 1) + 1);
+dayend = dayind(find(diff(dayind) > 1));
 
 % Length of each day
-daylength = dat.datetime_utc(dayend(2:end)) - dat.datetime_utc(daystart(1:end-1));
+% daylength = dat.datetime_local(dayend(2:end)) - dat.datetime_local(daystart(1:end-1));
+daylength = dat.datetime_local(dayend(2:end)) - dat.datetime_local(daystart(1:end-1) - 1);
 daylength = hours(daylength);
 
-daystart_dt = dat.datetime_utc(daystart(1:end-1));
-dayend_dt = dat.datetime_utc(dayend(2:end));
+daystart_dt = dat.datetime_local(daystart(1:end-1));
+dayend_dt = dat.datetime_local(dayend(2:end));
 
-%% HERE
-% ind_long = find(daylength > 15);
-% ind_short = find(daylength < 8);
+figure(4),clf;plot(dat.datetime_local(daystart(1:end-1)),daylength,'.')
+ylabel('Day length (h)')
 
-figure,clf;plot(dat.datetime_utc(daystart(1:end-1)),daylength,'.')
-hold on
-plot(dat.datetime_utc(daystart(ind_long)),daylength(ind_long),'or')
-plot(dat.datetime_utc(daystart(ind_short)),daylength(ind_short),'or')
-
-% daylength(ind_long) = NaN;
-% daylength(ind_short) = NaN;
-
-%%
 % Plot day/night indices with PAR as a check
-figure(4),clf
+figure(5),clf
 yyaxis left
-plot(dat.datetime_utc(dayind),dat.DO_conc(dayind),'.b','MarkerSize',6)
+plot(dat.datetime_local(dayind),dat.DO_conc(dayind),'.b','MarkerSize',6)
 hold on
-plot(dat.datetime_utc(nightind),dat.DO_conc(nightind),'.k','MarkerSize',6)
+plot(dat.datetime_local(nightind),dat.DO_conc(nightind),'.k','MarkerSize',6)
 set(gca,'ycolor','k')
 ylabel('DO conc (\mumol/L)')
 
 yyaxis right
-plot(parDat_rt.datetime_utc,parDat_rt.par,'.g','MarkerSize',6)
+plot(parDat_rt.datetime_local,parDat_rt.par,'.g','MarkerSize',6)
 set(gca,'ycolor','g')
 ylabel('PAR')
+xlabel('Local')
 
 xline(end1_dt,'--','label','DST Ends')
 xline(start2_dt,'--','label','DST Starts')
@@ -294,9 +321,9 @@ xline(end2_dt,'--','label','DST Ends')
 xline(start3_dt,'--','label','DST Starts')
 xline(end3_dt,'--','label','DST Ends')
 %%
-%====Calculate rates=====================================================
-dCdt = nan(length(dat.DO_conc),1);
-dCdt(2:end,1) = diff(dat.DO_conc) ./ hours(diff(dat.datetime_utc));  % [mmol m-3 h-1]
+%====Calculate rates=======================================================
+dCdt = nan(length(DO_conc),1);
+dCdt(2:end,1) = diff(DO_conc) ./ hours(diff(dat.datetime_utc));  % [mmol m-3 h-1]
 
 % Hourly rates of respiration and net production
 for i = 1:length(daylength)
@@ -306,15 +333,15 @@ for i = 1:length(daylength)
     P_hourly(i,1) = mean(dCdt(daystart(i):dayend(i+1)) - D(daystart(i):dayend(i+1)),'omitnan');     % Hourly rate of net production; [mmol m-3 h-1]
 end
 
-figure,clf
-yyaxis left;plot(dat.datetime_utc,dCdt,'.');ylabel('dC/dt')
-yyaxis right;plot(dat.datetime_utc,D,'.');ylabel('D')
+figure(6),clf
+yyaxis left;plot(dat.datetime_utc,dCdt,'.');ylabel('dC/dt (mmol m^{-3} h^{-1})')
+yyaxis right;plot(dat.datetime_utc,D,'.');ylabel('D (mmol m^{-3} h^{-1})')
 
 % Daily rates
 R_daily = R_hourly .* 24;                      % Daily rate of respiration; [mmol m-3 d-1]
 P_daily = (P_hourly - R_hourly) .* daylength;  % Daily rate of gross production; [mmol m-3 d-1]
 
-% Convert volumetric rates to depth-integrated (aereal) estimates
+% Convert volumetric rates to depth-integrated (areal) estimates
 GPP = P_daily * H;      % [mmol O2 m-2 d-1]
 ER = R_daily * H;       % [mmol O2 m-2 d-1]
 NEM = GPP + ER;         % [mmol O2 m-2 d-1]
@@ -322,7 +349,7 @@ NEM = GPP + ER;         % [mmol O2 m-2 d-1]
 metab_tbl = table(daystart_dt,dayend_dt,daylength,R_hourly,P_hourly,R_daily,P_daily,GPP,ER,NEM);
 %%
 % Plot metabolism results
-figure(1),clf
+figure(7),clf
 plot(dat.datetime_utc(daystart(1:end-1)),GPP,'.-','MarkerSize',12,'LineWidth',1)
 hold on
 plot(dat.datetime_utc(daystart(1:end-1)),ER,'k.-','MarkerSize',12,'LineWidth',1)
@@ -332,18 +359,13 @@ legend({'GPP','ER','NEM'},'FontSize',14)
 set(gca,'FontSize',14,'LineWidth',2)
 title('Gull - BC Sonde')
 
-cd('G:\My Drive\Postdoc\Work\SMIIL\figures\diel-analysis-figures')
-%%
 % Plot DO concentration and metabolism results 
-figure(2),clf
+figure(8),clf
 tiledlayout(2,1)
-
 ax1 = nexttile;
-% plot(dat.datetime_utc(daystart(1:end-1)),dat.DO_conc(daystart(1:end-1)),'.-','MarkerSize',12,'LineWidth',1)
 plot(dat.datetime_utc,dat.DO_conc,'.-','MarkerSize',6,'LineWidth',1)
-ylabel('DO conc (umol L^{-1})','FontSize',14)
+ylabel('DO conc (mmol m^{-3})','FontSize',14)
 title('Gull - BC Sonde')
-
 ax2 = nexttile;
 plot(dat.datetime_utc(daystart(1:end-1)),GPP,'.-','MarkerSize',12,'LineWidth',1);
 hold on
@@ -352,5 +374,82 @@ plot(dat.datetime_utc(daystart(1:end-1)),NEM,'r.-','MarkerSize',12,'LineWidth',1
 ylabel('mmol O_2 m^{-2} d^{-1}','FontSize',14)
 legend({'GPP','ER','NEM'},'FontSize',14)
 set(gca,'FontSize',14,'LineWidth',2)
+linkaxes([ax1 ax2],'x')
+%%
+% Plot DO concentration and tidal level (c.f. Beck Fig. 6)
+figure(9),clf
+tiledlayout(2,1)
+ax1 = nexttile;
+plot(dat.datetime_utc,DO_conc,'.-','MarkerSize',6,'Linewidth',1)
+ylabel('DO conc (mmol m^{-3})','FontSize',14)
+title('Gull - BC Sonde')
+ax2 = nexttile;
+plot(dat.datetime_utc,dat.depth,'.-','MarkerSize',6,'Linewidth',1)
+ylabel('Water Depth (m)')
+linkaxes([ax1 ax2],'x')
 
+cd('G:\My Drive\Postdoc\Work\SMIIL\figures\diel-analysis-figures')
+
+%%
+%====Export data in proper format to run Beck's R code=====================
+DO_mgL = dat.DO_conc / 1000 * 31.999;
+varNames = ["DateTimeStamp","Temp","Sal","DO_obs","ATemp","BP","WSpd","Tide"];
+dat_tbl = table(dat.datetime_utc,dat.temperature,dat.salinity,DO_mgL,dat.Tair,dat.patm,dat.wspd,dat.depth,'VariableNames',varNames);
+dat_tbl = rmmissing(dat_tbl);
+
+writetable(dat_tbl,'G:\My Drive\Postdoc\Work\SMIIL\diel-method\owp-data\gull-bc.csv')
+%%
+%====Import metabolism results from running Beck's R code==================
+cd([rootpath,'diel-method\owp-results'])
+
+% See help("ecometab") in R for variable names, units, etc.
+varNames = ["datetime_local","Pg","Rt","NEM","Pg_vol","Rt_vol"];
+varUnits = ["","mmol O2 m-2 d-1","mmol O2 m-2 d-1","mmol O2 m-2 d-1","mmol O2 m-3 d-1","mmol O2 m-3 d-1"];
+
+metab_obs = readtable('gull-bc-metab_obs.csv');
+metab_obs.Properties.VariableNames = varNames;
+metab_obs.Properties.VariableUnits = varUnits;
+
+metab_dtd = readtable('gull-bc-metab_dtd.csv');
+metab_dtd.Properties.VariableNames = varNames;
+metab_dtd.Properties.VariableUnits = varUnits;
+
+%%
+figure(10),clf
+plot(metab_obs.datetime_local,metab_obs.Pg,'.-','MarkerSize',12,'LineWidth',1)
+hold on
+plot(metab_obs.datetime_local,metab_obs.Rt,'k.-','MarkerSize',12,'LineWidth',1)
+plot(metab_obs.datetime_local,metab_obs.NEM,'r.-','MarkerSize',12,'LineWidth',1)
+ylabel('mmol O_2 m^{-2} d^{-1}','FontSize',14)
+title('Beck Metabolism Results for Gull BC Sonde - Not Detided')
+legend({'GPP','ER','NEM'},'FontSize',14)
+
+figure(11),clf
+plot(metab_dtd.datetime_local,metab_dtd.Pg,'.-','MarkerSize',12,'LineWidth',1)
+hold on
+plot(metab_dtd.datetime_local,metab_dtd.Rt,'k.-','MarkerSize',12,'LineWidth',1)
+plot(metab_dtd.datetime_local,metab_dtd.NEM,'r.-','MarkerSize',12,'LineWidth',1)
+ylabel('mmol O_2 m^{-2} d^{-1}','FontSize',14)
+title('Beck Metabolism Results for Gull BC Sonde - Detided')
+legend({'GPP','ER','NEM'},'FontSize',14)
+%%
+% Plot in same figure with linked axes
+figure(12),clf
+tiledlayout(2,1)
+ax1 = nexttile;
+plot(metab_obs.datetime_local,metab_obs.Pg,'.-','MarkerSize',12,'LineWidth',1)
+hold on
+plot(metab_obs.datetime_local,metab_obs.Rt,'k.-','MarkerSize',12,'LineWidth',1)
+plot(metab_obs.datetime_local,metab_obs.NEM,'r.-','MarkerSize',12,'LineWidth',1)
+ylabel('mmol O_2 m^{-2} d^{-1}','FontSize',14)
+title('Beck Metabolism Results for Gull BC Sonde - Not Detided')
+ax2 = nexttile;
+plot(metab_dtd.datetime_local,metab_dtd.Pg,'.-','MarkerSize',12,'LineWidth',1)
+hold on
+plot(metab_dtd.datetime_local,metab_dtd.Rt,'k.-','MarkerSize',12,'LineWidth',1)
+plot(metab_dtd.datetime_local,metab_dtd.NEM,'r.-','MarkerSize',12,'LineWidth',1)
+ylabel('mmol O_2 m^{-2} d^{-1}','FontSize',14)
+title('Beck Metabolism Results for Gull BC Sonde - Detided')
+legend({'GPP','ER','NEM'},'FontSize',14)
+set(gca,'FontSize',14,'LineWidth',2)
 linkaxes([ax1 ax2],'x')

@@ -1,14 +1,14 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % convertRawData_south.m
-% This script reads in the raw .csv data from the South open-water platform 
+% This script reads in the raw .csv data from the South open-water platform
 % for one deployment from both sondes (BC and ERDC).
 %
 % AUTHOR:
-% Emily Chua 
-% 
+% Emily Chua
+%
 % DATE:
 % First created: 9/14/2023
-% Last amended: 1/24/2024
+% Last amended: 6/26/2024
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %===Read in sonde data=====================================================
@@ -28,14 +28,14 @@ if numel(fileNames) == 2
     fileName2 = extractBefore(fileNames{2},'.csv');
     depNum = extractBetween(fileName1,"dep","-");
 else
-    sonde = extractBefore(extractAfter(fileNames,13),5);
+    sonde = extractBefore(extractAfter(fileNames,13),'.csv');
     switch sonde
         case{'bc'}
-        fileName1 = extractBefore(fileNames,'.csv');
-        depNum = extractBetween(fileName1,"dep","-");
+            fileName1 = extractBefore(fileNames,'.csv');
+            depNum = extractBetween(fileName1,"dep","-");
         case{'erdc'}
-        fileName2 = extractBefore(fileNames,'.csv');
-        depNum = extractBetween(fileName2,"dep","-");
+            fileName2 = extractBefore(fileNames,'.csv');
+            depNum = extractBetween(fileName2,"dep","-");
     end
 end
 depNum = str2double(depNum);
@@ -82,7 +82,12 @@ switch depNum
             "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","chla",...
             "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
 
-    case{8,10,11,12,13,14,16}
+    case{15}
+        paramNames2 = ["datetime_local","actual_cond","specific_cond","salinity","resistivity",...
+            "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","turbidity",...
+            "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
+
+    case{8,10,11,12,13,14,16,17,18}
         paramNames1 = ["datetime_local","actual_cond","specific_cond","salinity","resistivity",...
             "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","chla",...
             "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
@@ -90,10 +95,6 @@ switch depNum
             "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","turbidity",...
             "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
 
-    case{15}
-        paramNames2 = ["datetime_local","actual_cond","specific_cond","salinity","resistivity",...
-            "density","TDS","DO_conc","DO_sat","pO2","pH","pH_raw","ORP","turbidity",...
-            "temperature","external_voltage","battery_capacity","barometric_p","p","depth"];
 end
 
 if numel(fileNames) == 2
@@ -144,142 +145,141 @@ end
 % Set timezones. If not present, create a column for datetime in UTC.
 switch depNum
     case{1,2}
-    sonde1.datetime_utc.TimeZone = 'UTC';
-    sonde2.datetime_utc.TimeZone = 'UTC';
+        sonde1.datetime_utc.TimeZone = 'UTC';
+        sonde2.datetime_utc.TimeZone = 'UTC';
 
     case{4}
-    sonde1.datetime_local.TimeZone = 'America/New_York';
-    datetime_utc1 = datetime(sonde1.datetime_local,'TimeZone','UTC');
-    datetime_utc1 = table(datetime_utc1,'VariableNames',"datetime_utc");
-    sonde1 = [datetime_utc1,sonde1];
+        sonde1.datetime_local.TimeZone = 'America/New_York';
+        datetime_utc1 = datetime(sonde1.datetime_local,'TimeZone','UTC');
+        datetime_utc1 = table(datetime_utc1,'VariableNames',"datetime_utc");
+        sonde1 = [datetime_utc1,sonde1];
 
     case{5}
-    sonde1.datetime_local.TimeZone = 'America/New_York';
-    sonde2.datetime_local.TimeZone = 'America/New_York';
-    sonde1.datetime_utc.TimeZone = 'UTC';
-    datetime_utc2 = datetime(sonde2.datetime_local,'TimeZone','UTC');
-    sonde2.datetime_utc = datetime_utc2;    % Had a datetime UTC column, but empty of values
+        sonde1.datetime_local.TimeZone = 'America/New_York';
+        sonde2.datetime_local.TimeZone = 'America/New_York';
+        sonde1.datetime_utc.TimeZone = 'UTC';
+        datetime_utc2 = datetime(sonde2.datetime_local,'TimeZone','UTC');
+        sonde2.datetime_utc = datetime_utc2;    % Had a datetime UTC column, but empty of values
 
     case{6}
-    sonde1.datetime_utc.TimeZone = 'America/New_York';
-
-    case{7,8,9,10,11,12,13,14,16}
-    sonde1.datetime_local.TimeZone = 'America/New_York';
-    datetime_utc1 = datetime(sonde1.datetime_local,'TimeZone','UTC');
-    datetime_utc1 = table(datetime_utc1,'VariableNames',"datetime_utc");
-    sonde1 = [datetime_utc1,sonde1];
-    sonde2.datetime_local.TimeZone = 'America/New_York';
-    datetime_utc2 = datetime(sonde2.datetime_local,'TimeZone','UTC');
-    datetime_utc2 = table(datetime_utc2,'VariableNames',"datetime_utc");
-    sonde2 = [datetime_utc2,sonde2];
+        sonde1.datetime_utc.TimeZone = 'America/New_York';
 
     case{15}
-    sonde2.datetime_local.TimeZone = 'America/New_York';
-    datetime_utc2 = datetime(sonde2.datetime_local,'TimeZone','UTC');
-    datetime_utc2 = table(datetime_utc2,'VariableNames',"datetime_utc");
-    sonde2 = [datetime_utc2,sonde2];
+        sonde2.datetime_local.TimeZone = 'America/New_York';
+        datetime_utc2 = datetime(sonde2.datetime_local,'TimeZone','UTC');
+        datetime_utc2 = table(datetime_utc2,'VariableNames',"datetime_utc");
+        sonde2 = [datetime_utc2,sonde2];
 
+    case{7,8,9,10,11,12,13,14,16,17,18}
+        sonde1.datetime_local.TimeZone = 'America/New_York';
+        datetime_utc1 = datetime(sonde1.datetime_local,'TimeZone','UTC');
+        datetime_utc1 = table(datetime_utc1,'VariableNames',"datetime_utc");
+        sonde1 = [datetime_utc1,sonde1];
+        sonde2.datetime_local.TimeZone = 'America/New_York';
+        datetime_utc2 = datetime(sonde2.datetime_local,'TimeZone','UTC');
+        datetime_utc2 = table(datetime_utc2,'VariableNames',"datetime_utc");
+        sonde2 = [datetime_utc2,sonde2];
 end
 
 % Create columns filled with NaNs for parameters not measured
 switch depNum
     case{1,2}
-    % sonde1 (BC)
-    datetime_local = array2table(NaT(height(sonde1),1,'TimeZone','America/New_York'),'VariableNames',"datetime_local");
-    actual_cond = array2table(NaN(height(sonde1),1),'VariableNames',"actual_cond");
-    specific_cond = array2table(NaN(height(sonde1),1),'VariableNames',"specific_cond");
-    resistivity = array2table(NaN(height(sonde1),1),'VariableNames',"resistivity");
-    density = array2table(NaN(height(sonde1),1),'VariableNames',"density");
-    barometric_p = array2table(NaN(height(sonde1),1),'VariableNames',"barometric_p");
-    p = array2table(NaN(height(sonde1),1),'VariableNames',"p");
-    TDS = array2table(NaN(height(sonde1),1),'VariableNames',"TDS");
-    pO2 = array2table(NaN(height(sonde1),1),'VariableNames',"pO2");
-    DO_sat = array2table(NaN(height(sonde1),1),'VariableNames',"DO_sat");
-    pH = array2table(NaN(height(sonde1),1),'VariableNames',"pH");
-    pH_raw = array2table(NaN(height(sonde1),1),'VariableNames',"pH_raw");
-    ORP = array2table(NaN(height(sonde1),1),'VariableNames',"ORP");
-    external_voltage = array2table(NaN(height(sonde1),1),'VariableNames',"external_voltage");
-    battery_capacity = array2table(NaN(height(sonde1),1),'VariableNames',"battery_capacity");
-    sonde1 = [datetime_local actual_cond specific_cond resistivity density barometric_p p TDS pO2 DO_sat pH pH_raw ORP external_voltage battery_capacity sonde1];
-    
-    % sonde2 (ERDC)
-    datetime_local = array2table(NaT(height(sonde2),1,'TimeZone','America/New_York'),'VariableNames',"datetime_local");
-    actual_cond = array2table(NaN(height(sonde2),1),'VariableNames',"actual_cond");
-    specific_cond = array2table(NaN(height(sonde2),1),'VariableNames',"specific_cond");
-    resistivity = array2table(NaN(height(sonde2),1),'VariableNames',"resistivity");
-    density = array2table(NaN(height(sonde2),1),'VariableNames',"density");
-    barometric_p = array2table(NaN(height(sonde2),1),'VariableNames',"barometric_p");
-    p = array2table(NaN(height(sonde2),1),'VariableNames',"p");
-    TDS = array2table(NaN(height(sonde2),1),'VariableNames',"TDS");
-    pO2 = array2table(NaN(height(sonde2),1),'VariableNames',"pO2");
-    DO_sat = array2table(NaN(height(sonde2),1),'VariableNames',"DO_sat");
-    pH_raw = array2table(NaN(height(sonde2),1),'VariableNames',"pH_raw");
-    ORP = array2table(NaN(height(sonde2),1),'VariableNames',"ORP");
-    external_voltage = array2table(NaN(height(sonde2),1),'VariableNames',"external_voltage");
-    battery_capacity = array2table(NaN(height(sonde2),1),'VariableNames',"battery_capacity");
-    sonde2 = [datetime_local actual_cond specific_cond resistivity density barometric_p p TDS pO2 DO_sat pH_raw ORP external_voltage battery_capacity sonde2];
+        % sonde1 (BC)
+        datetime_local = array2table(NaT(height(sonde1),1,'TimeZone','America/New_York'),'VariableNames',"datetime_local");
+        actual_cond = array2table(NaN(height(sonde1),1),'VariableNames',"actual_cond");
+        specific_cond = array2table(NaN(height(sonde1),1),'VariableNames',"specific_cond");
+        resistivity = array2table(NaN(height(sonde1),1),'VariableNames',"resistivity");
+        density = array2table(NaN(height(sonde1),1),'VariableNames',"density");
+        barometric_p = array2table(NaN(height(sonde1),1),'VariableNames',"barometric_p");
+        p = array2table(NaN(height(sonde1),1),'VariableNames',"p");
+        TDS = array2table(NaN(height(sonde1),1),'VariableNames',"TDS");
+        pO2 = array2table(NaN(height(sonde1),1),'VariableNames',"pO2");
+        DO_sat = array2table(NaN(height(sonde1),1),'VariableNames',"DO_sat");
+        pH = array2table(NaN(height(sonde1),1),'VariableNames',"pH");
+        pH_raw = array2table(NaN(height(sonde1),1),'VariableNames',"pH_raw");
+        ORP = array2table(NaN(height(sonde1),1),'VariableNames',"ORP");
+        external_voltage = array2table(NaN(height(sonde1),1),'VariableNames',"external_voltage");
+        battery_capacity = array2table(NaN(height(sonde1),1),'VariableNames',"battery_capacity");
+        sonde1 = [datetime_local actual_cond specific_cond resistivity density barometric_p p TDS pO2 DO_sat pH pH_raw ORP external_voltage battery_capacity sonde1];
 
-    case 4
-    % sonde1 (BC)
-    actual_cond = array2table(NaN(height(sonde1),1),'VariableNames',"actual_cond");
-    resistivity = array2table(NaN(height(sonde1),1),'VariableNames',"resistivity");
-    density = array2table(NaN(height(sonde1),1),'VariableNames',"density");
-    barometric_p = array2table(NaN(height(sonde1),1),'VariableNames',"barometric_p");
-    p = array2table(NaN(height(sonde1),1),'VariableNames',"p");
-    TDS = array2table(NaN(height(sonde1),1),'VariableNames',"TDS");
-    pH = array2table(NaN(height(sonde1),1),'VariableNames',"pH");
-    pH_raw = array2table(NaN(height(sonde1),1),'VariableNames',"pH_raw");
-    ORP = array2table(NaN(height(sonde1),1),'VariableNames',"ORP");
-    battery_capacity = array2table(NaN(height(sonde1),1),'VariableNames',"battery_capacity");
-    sonde1 = [actual_cond resistivity density barometric_p p TDS pH pH_raw ORP battery_capacity sonde1];
-    
+        % sonde2 (ERDC)
+        datetime_local = array2table(NaT(height(sonde2),1,'TimeZone','America/New_York'),'VariableNames',"datetime_local");
+        actual_cond = array2table(NaN(height(sonde2),1),'VariableNames',"actual_cond");
+        specific_cond = array2table(NaN(height(sonde2),1),'VariableNames',"specific_cond");
+        resistivity = array2table(NaN(height(sonde2),1),'VariableNames',"resistivity");
+        density = array2table(NaN(height(sonde2),1),'VariableNames',"density");
+        barometric_p = array2table(NaN(height(sonde2),1),'VariableNames',"barometric_p");
+        p = array2table(NaN(height(sonde2),1),'VariableNames',"p");
+        TDS = array2table(NaN(height(sonde2),1),'VariableNames',"TDS");
+        pO2 = array2table(NaN(height(sonde2),1),'VariableNames',"pO2");
+        DO_sat = array2table(NaN(height(sonde2),1),'VariableNames',"DO_sat");
+        pH_raw = array2table(NaN(height(sonde2),1),'VariableNames',"pH_raw");
+        ORP = array2table(NaN(height(sonde2),1),'VariableNames',"ORP");
+        external_voltage = array2table(NaN(height(sonde2),1),'VariableNames',"external_voltage");
+        battery_capacity = array2table(NaN(height(sonde2),1),'VariableNames',"battery_capacity");
+        sonde2 = [datetime_local actual_cond specific_cond resistivity density barometric_p p TDS pO2 DO_sat pH_raw ORP external_voltage battery_capacity sonde2];
+
+    case {4}
+        % sonde1 (BC)
+        actual_cond = array2table(NaN(height(sonde1),1),'VariableNames',"actual_cond");
+        resistivity = array2table(NaN(height(sonde1),1),'VariableNames',"resistivity");
+        density = array2table(NaN(height(sonde1),1),'VariableNames',"density");
+        barometric_p = array2table(NaN(height(sonde1),1),'VariableNames',"barometric_p");
+        p = array2table(NaN(height(sonde1),1),'VariableNames',"p");
+        TDS = array2table(NaN(height(sonde1),1),'VariableNames',"TDS");
+        pH = array2table(NaN(height(sonde1),1),'VariableNames',"pH");
+        pH_raw = array2table(NaN(height(sonde1),1),'VariableNames',"pH_raw");
+        ORP = array2table(NaN(height(sonde1),1),'VariableNames',"ORP");
+        battery_capacity = array2table(NaN(height(sonde1),1),'VariableNames',"battery_capacity");
+        sonde1 = [actual_cond resistivity density barometric_p p TDS pH pH_raw ORP battery_capacity sonde1];
+
     case{5}
-    % sonde1 (BC)
-    pH = array2table(NaN(height(sonde1),1),'VariableNames',"pH");
-    pH_raw = array2table(NaN(height(sonde1),1),'VariableNames',"pH_raw");
-    ORP = array2table(NaN(height(sonde1),1),'VariableNames',"ORP");
-    external_voltage = array2table(NaN(height(sonde1),1),'VariableNames',"external_voltage");
-    battery_capacity = array2table(NaN(height(sonde1),1),'VariableNames',"battery_capacity");
-    nitrate = array2table(NaN(height(sonde1),1),'VariableNames',"nitrate");
-    sonde1 = [pH pH_raw ORP external_voltage battery_capacity nitrate sonde1];
-    
-    case{6}
-    % sonde1 (BC)
-    datetime_local = array2table(NaT(height(sonde1),1,'TimeZone','America/New_York'),'VariableNames',"datetime_local");
-    actual_cond = array2table(NaN(height(sonde1),1),'VariableNames',"actual_cond");
-    resistivity = array2table(NaN(height(sonde1),1),'VariableNames',"resistivity");
-    density = array2table(NaN(height(sonde1),1),'VariableNames',"density");
-    barometric_p = array2table(NaN(height(sonde1),1),'VariableNames',"barometric_p");
-    p = array2table(NaN(height(sonde1),1),'VariableNames',"p");
-    TDS = array2table(NaN(height(sonde1),1),'VariableNames',"TDS");
-    pO2 = array2table(NaN(height(sonde1),1),'VariableNames',"pO2");
-    ORP = array2table(NaN(height(sonde1),1),'VariableNames',"ORP");
-    external_voltage = array2table(NaN(height(sonde1),1),'VariableNames',"external_voltage");
-    battery_capacity = array2table(NaN(height(sonde1),1),'VariableNames',"battery_capacity");
-    nitrate = array2table(NaN(height(sonde1),1),'VariableNames',"nitrate");
-    sonde1 = [datetime_local actual_cond resistivity density barometric_p p TDS pO2 ORP external_voltage battery_capacity nitrate sonde1];
-   
-    case{9}
-    % sonde1 (BC)
-    nitrate = array2table(NaN(height(sonde1),1),'VariableNames',"nitrate");
-    sonde1 = [nitrate sonde1];
-    % sonde2 (ERDC)
-    turbidity = array2table(NaN(height(sonde2),1),'VariableNames',"turbidity");
-    sonde2 = [turbidity sonde2];
+        % sonde1 (BC)
+        pH = array2table(NaN(height(sonde1),1),'VariableNames',"pH");
+        pH_raw = array2table(NaN(height(sonde1),1),'VariableNames',"pH_raw");
+        ORP = array2table(NaN(height(sonde1),1),'VariableNames',"ORP");
+        external_voltage = array2table(NaN(height(sonde1),1),'VariableNames',"external_voltage");
+        battery_capacity = array2table(NaN(height(sonde1),1),'VariableNames',"battery_capacity");
+        nitrate = array2table(NaN(height(sonde1),1),'VariableNames',"nitrate");
+        sonde1 = [pH pH_raw ORP external_voltage battery_capacity nitrate sonde1];
 
-    case{7,8,10,11,12,13,14,16}
-    % sonde1 (BC)
-    nitrate = array2table(NaN(height(sonde1),1),'VariableNames',"nitrate");
-    sonde1 = [nitrate sonde1];
+    case{6}
+        % sonde1 (BC)
+        datetime_local = array2table(NaT(height(sonde1),1,'TimeZone','America/New_York'),'VariableNames',"datetime_local");
+        actual_cond = array2table(NaN(height(sonde1),1),'VariableNames',"actual_cond");
+        resistivity = array2table(NaN(height(sonde1),1),'VariableNames',"resistivity");
+        density = array2table(NaN(height(sonde1),1),'VariableNames',"density");
+        barometric_p = array2table(NaN(height(sonde1),1),'VariableNames',"barometric_p");
+        p = array2table(NaN(height(sonde1),1),'VariableNames',"p");
+        TDS = array2table(NaN(height(sonde1),1),'VariableNames',"TDS");
+        pO2 = array2table(NaN(height(sonde1),1),'VariableNames',"pO2");
+        ORP = array2table(NaN(height(sonde1),1),'VariableNames',"ORP");
+        external_voltage = array2table(NaN(height(sonde1),1),'VariableNames',"external_voltage");
+        battery_capacity = array2table(NaN(height(sonde1),1),'VariableNames',"battery_capacity");
+        nitrate = array2table(NaN(height(sonde1),1),'VariableNames',"nitrate");
+        sonde1 = [datetime_local actual_cond resistivity density barometric_p p TDS pO2 ORP external_voltage battery_capacity nitrate sonde1];
+
+    case{9}
+        % sonde1 (BC)
+        nitrate = array2table(NaN(height(sonde1),1),'VariableNames',"nitrate");
+        sonde1 = [nitrate sonde1];
+        % sonde2 (ERDC)
+        turbidity = array2table(NaN(height(sonde2),1),'VariableNames',"turbidity");
+        sonde2 = [turbidity sonde2];
+
+    case{7,8,10,11,12,13,14,16,17,18}
+        % sonde1 (BC)
+        nitrate = array2table(NaN(height(sonde1),1),'VariableNames',"nitrate");
+        sonde1 = [nitrate sonde1];
 end
 
 %===Convert units==========================================================
 
 % Depth: Convert [ft] to [m]
 switch depNum
-    case{9}
+    case{9,18}
         sonde1.depth = sonde1.depth/3.281;
-    case{10,11}
+    case{10,11,17}
         sonde2.depth = sonde2.depth/3.281;
     case{12,13,14,16}
         sonde1.depth = sonde1.depth/3.281;
@@ -303,7 +303,7 @@ end
 switch depNum
     case {10,11,12,14}
         sonde1.p = sonde1.p/68.9476;
-    case 8
+    case {8}
         sonde1.p = sonde1.p/68.9476;
         sonde2.p = sonde2.p/68.9476;
 end
@@ -320,9 +320,9 @@ if numel(fileNames) == 2
         'temperature' 'barometric_p' 'p' 'depth' 'TDS' 'DO_conc' 'DO_sat' 'pO2' ...
         'pH' 'pH_raw' 'ORP' 'turbidity' 'external_voltage' 'battery_capacity'});
     paramUnits1 = ["","","",...
-    "uS/cm","uS/cm","psu","ohm cm","g/cm3",...
-    "degC","mmHg","psi","m","ppt","umol/L","%sat","torr",...
-    "","mV","mV","mg/L","RFU","V","%"];
+        "uS/cm","uS/cm","psu","ohm cm","g/cm3",...
+        "degC","mmHg","psi","m","ppt","umol/L","%sat","torr",...
+        "","mV","mV","mg/L","RFU","V","%"];
     paramUnits2 = ["","","",...
         "uS/cm","uS/cm","psu","ohm cm","g/cm3",...
         "degC","mmHg","psi","m","ppt","umol/L","%sat","torr",...
@@ -353,7 +353,6 @@ else
             sonde2.Properties.VariableUnits = paramUnits2;
     end
 end
-
 
 %====Save created tables in .mat files=====================================
 option = questdlg(['Save .mat file in SMIIL\open-water-platform-data\',site,'\original\deployments?'],'Save File','Y','N','Y');

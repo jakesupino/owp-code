@@ -8,7 +8,7 @@
 %
 % DATE:
 % First created: 9/14/2023
-% Last amended: 1/24/2024
+% Last amended: 6/26/2024
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 clear all;close all;clc
@@ -58,9 +58,9 @@ switch depNum
     % Plots if both sondes telemetered (Deployments 1-2)
     case{1, 2}
         nexttile(1)
-        plot(sonde1.datetime_utc,sonde1.depth,'color',red)
+        plot(sonde1.datetime_utc,sonde1.depth,'.','color',red)
         hold on
-        plot(sonde2.datetime_utc,sonde2.depth,'color',blue)
+        plot(sonde2.datetime_utc,sonde2.depth,'.','color',blue)
         hold off
         title('Depth')
         ylabel('Depth (m)')
@@ -115,7 +115,7 @@ switch depNum
         xlim('tight')
 
     % Plots if one or more sondes were internally logged (Deployment 4 onwards)
-    case{4,5,6,7,8,9,10,11,12,13,14,15,16}
+    case{4,5,6,7,8,9,10,11,12,13,14,15,16,17,18}
         if strcmp(site,'south') == 1 && (depNum == 4 || depNum == 6 || depNum == 15)
             if depNum == 4 || depNum == 6
                 nexttile(1)
@@ -281,13 +281,13 @@ switch depNum
             xlim(ax1.XLim);ylim('tight')
         end
 end
-
+%%
 %===Option to save plots===================================================
 switch dataset
     case "original"
-        saveFilePath = ['figures\open-water-platform-figures\',site,'\original\deployments'];
+        saveFilePath = ['figures\open-water-platform\',site,'\original\deployments'];
     case "adjusted"
-        saveFilePath = ['figures\open-water-platform-figures\',site,'\adjusted\deployments'];
+        saveFilePath = ['figures\open-water-platform\',site,'\adjusted\deployments'];
 end
 
 option = questdlg(['Save plots as .png and .fig in ',saveFilePath,'?'],'Save plots','Y','N','Y');
